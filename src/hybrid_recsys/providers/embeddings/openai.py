@@ -1,7 +1,5 @@
 """OpenAI embedding provider (works with both OpenAI and Azure OpenAI)."""
 
-from typing import cast
-
 from openai import OpenAI
 
 from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
@@ -30,7 +28,8 @@ class OpenAIEmbeddingProvider(EmbeddingProvider):
     def embed(self, text: str) -> list[float]:
         """Embed a single text string via OpenAI API."""
         response = self._client.embeddings.create(input=text, model=self._model)
-        return cast("list[float]", response.data[0].embedding)  # type: ignore[redundant-cast]
+        result: list[float] = response.data[0].embedding
+        return result
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed a batch of texts via OpenAI API."""
