@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pipx install poetry
+
+      - name: Cache Poetry virtualenv
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pypoetry
+            .venv
+          key: poetry-${{ hashFiles('poetry.lock') }}
+          restore-keys: poetry-
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Download spaCy models
+        run: |
+          poetry run python -m spacy download fr_core_news_sm
+          poetry run python -m spacy download en_core_web_sm
+          poetry run python -m spacy download de_core_news_sm
+
+      - name: Download NLTK data
+        run: poetry run python -c "import nltk; nltk.download('stopwords')"
+
+      - name: Run tests
+        run: poetry run pytest --tb=short
+
+      - name: Lint
+        run: poetry run ruff check src/ tests/
