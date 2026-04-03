@@ -12,3 +12,5 @@ docs/superpowers/
 node_modules/
 models/
 .DS_Store
+.claude/
+poetry.lock
