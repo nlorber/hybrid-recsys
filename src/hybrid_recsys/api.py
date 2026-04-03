@@ -1,18 +1,24 @@
 """FastAPI application for the recommendation engine."""
 
+from __future__ import annotations
+
 import logging
-from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 
 from hybrid_recsys.config import Settings
 from hybrid_recsys.models import RecoRequest, RecoResponse
-from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.embeddings.sentence_tf import SentenceTransformerProvider
-from hybrid_recsys.providers.llm.base import LLMProvider
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
+
+if TYPE_CHECKING:
+    from collections.abc import AsyncGenerator
+
+    from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
+    from hybrid_recsys.providers.llm.base import LLMProvider
 
 logger = logging.getLogger(__name__)
 

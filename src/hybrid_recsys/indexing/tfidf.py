@@ -61,4 +61,4 @@ class TfidfPipeline:
         """
         processed = self._nlp.preprocess(query, lang)
         vec = vectorizer.transform([processed])
-        return cast(list[float], vec.toarray().flatten().tolist())
+        return cast("list[float]", vec.toarray().flatten().tolist())
