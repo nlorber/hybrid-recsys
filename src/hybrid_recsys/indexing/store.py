@@ -52,7 +52,7 @@ class IndexStore:
             "tfidf_dim": index.tfidf_dim,
         }
         with open(lang_dir / "metadata.json", "w", encoding="utf-8") as f:
-            json.dump(metadata, f)
+            json.dump(metadata, f, indent=2, ensure_ascii=False)
 
     def load(self, lang: str, base_dir: Path) -> LanguageIndex:
         """Load all index artifacts for a language.
