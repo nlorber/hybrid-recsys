@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "hybrid-recsys"
+version = "0.1.0"
+description = "Multilingual hybrid recommendation engine: dual retrieval, RRF, LLM re-ranking"
+authors = ["Nathan Lorber"]
+readme = "README.md"
+packages = [{include = "hybrid_recsys", from = "src"}]
+
+[tool.poetry.scripts]
+hybrid-recsys = "hybrid_recsys.cli:app"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pydantic = "^2.0"
+pydantic-settings = "^2.0"
+fastapi = "^0.115"
+uvicorn = {extras = ["standard"], version = "^0.34"}
+annoy = "^1.17"
+scikit-learn = "^1.6"
+sentence-transformers = "^4.0"
+spacy = "^3.8"
+nltk = "^3.9"
+typer = "^0.15"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+httpx = "^0.28"
+ruff = "^0.11"
+
+[tool.poetry.group.openai]
+optional = true
+
+[tool.poetry.group.openai.dependencies]
+openai = "^1.60"
+
+[tool.ruff]
+target-version = "py311"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "A", "SIM", "TCH"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

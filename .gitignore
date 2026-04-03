@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+.venv/
+dist/
+*.egg-info/
+data/index/
+docs/superpowers/
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.env
+node_modules/
+models/
+.DS_Store
