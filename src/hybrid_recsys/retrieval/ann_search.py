@@ -1,11 +1,15 @@
 """Annoy-based Approximate Nearest Neighbor search."""
 
+from typing import Literal
+
 from annoy import AnnoyIndex
+
+AnnoyMetric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
 
 
 def build_annoy_index(
     vectors: list[list[float]],
-    metric: str = "angular",
+    metric: AnnoyMetric = "angular",
     n_trees: int = 10,
 ) -> AnnoyIndex:
     """Build an Annoy index from a list of vectors.

@@ -1,6 +1,7 @@
 """Main recommendation pipeline: orchestrates dual retrieval, fusion, and re-ranking."""
 
 import logging
+from typing import Any
 
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
@@ -119,7 +120,7 @@ class RecommendationPipeline:
         and fuses them via RRF.
         """
         # Get earliest episode per program
-        earliest: dict[str, dict] = {}
+        earliest: dict[str, dict[str, Any]] = {}
         all_program_ids = set(emb_programs) | set(tfidf_programs)
         for pid in all_program_ids:
             media_list = index.media_data.get(pid, [])

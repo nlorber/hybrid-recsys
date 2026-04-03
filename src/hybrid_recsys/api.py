@@ -1,13 +1,16 @@
 """FastAPI application for the recommendation engine."""
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 
 from hybrid_recsys.config import Settings
 from hybrid_recsys.models import RecoRequest, RecoResponse
+from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.embeddings.sentence_tf import SentenceTransformerProvider
+from hybrid_recsys.providers.llm.base import LLMProvider
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
 
@@ -16,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 def _create_pipeline(settings: Settings) -> RecommendationPipeline:
     """Create the pipeline with the configured providers."""
+    embedder: EmbeddingProvider
     if settings.embedding_provider == "sentence-transformers":
         embedder = SentenceTransformerProvider(settings.embedding_model)
     elif settings.embedding_provider == "openai":
@@ -30,6 +34,7 @@ def _create_pipeline(settings: Settings) -> RecommendationPipeline:
         msg = f"Unknown embedding provider: {settings.embedding_provider}"
         raise ValueError(msg)
 
+    llm: LLMProvider
     if settings.llm_provider == "mock":
         llm = MockLLMProvider()
     elif settings.llm_provider == "openai":
@@ -47,7 +52,7 @@ def _create_pipeline(settings: Settings) -> RecommendationPipeline:
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize pipeline on startup."""
     settings = Settings()
     logger.info("Initializing recommendation pipeline")

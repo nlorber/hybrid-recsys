@@ -4,6 +4,8 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from hybrid_recsys.retrieval.ann_search import AnnoyMetric
+
 
 class Settings(BaseSettings):
     """Recommendation engine configuration.
@@ -34,7 +36,7 @@ class Settings(BaseSettings):
     rrf_media_k: int = 8
 
     # ANN parameters
-    ann_metric: str = "angular"
+    ann_metric: AnnoyMetric = "angular"
     ann_n_trees: int = 10
     ann_query_k: int = 20
 

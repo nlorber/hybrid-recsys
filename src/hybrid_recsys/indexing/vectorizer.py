@@ -1,6 +1,7 @@
 """Orchestrates offline index building: embed, vectorize, build ANN indexes, save."""
 
 import logging
+from typing import Any
 
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
@@ -76,7 +77,7 @@ class Vectorizer:
 
         # Prepare metadata
         program_descriptions = dict(zip(program_ids, descriptions, strict=True))
-        media_data: dict[str, list[dict]] = {}
+        media_data: dict[str, list[dict[str, Any]]] = {}
         for item in items:
             media_data[item.program_id] = [m.model_dump() for m in item.media]
 

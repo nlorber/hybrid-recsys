@@ -1,5 +1,7 @@
 """TF-IDF vectorization pipeline with multilingual preprocessing."""
 
+from typing import cast
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from hybrid_recsys.providers.nlp.spacy import SpacyNLP
@@ -59,4 +61,4 @@ class TfidfPipeline:
         """
         processed = self._nlp.preprocess(query, lang)
         vec = vectorizer.transform([processed])
-        return vec.toarray().flatten().tolist()
+        return cast(list[float], vec.toarray().flatten().tolist())
