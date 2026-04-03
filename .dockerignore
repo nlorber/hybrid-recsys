@@ -1,0 +1,16 @@
+.git
+.venv
+data
+*.egg-info
+dist
+__pycache__
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.DS_Store
+.env
+.claude
+docs
+tests
+node_modules
+models
