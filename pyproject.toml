@@ -54,6 +54,7 @@ module = [
     "sklearn.*",
     "nltk.*",
     "annoy",
+    "openai",
     "spacy",
     "sentence_transformers",
 ]
