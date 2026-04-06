@@ -1,6 +1,7 @@
 # hybrid-recsys
 
 ![CI](https://github.com/nlorber/hybrid-recsys/actions/workflows/test.yml/badge.svg)
+![Coverage](https://img.shields.io/badge/coverage-76%25-yellow)
 
 Multilingual content recommendation engine combining dual retrieval, Reciprocal
 Rank Fusion, and LLM re-ranking.
