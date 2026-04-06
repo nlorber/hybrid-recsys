@@ -110,8 +110,8 @@ Example response:
 
 ```json
 {
-  "programs": ["prog-042", "prog-017", "prog-091"],
-  "medias":   ["media-042-01", "media-017-01", "media-091-01"]
+  "programs": ["prg_0042", "prg_0017", "prg_0091"],
+  "medias":   ["med_00224", "med_00089", "med_00490"]
 }
 ```
 

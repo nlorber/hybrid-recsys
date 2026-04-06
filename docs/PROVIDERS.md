@@ -59,8 +59,9 @@ to the RRF ranking whenever the LLM call fails or returns an unusable response.
 
 ### Mock (default)
 
-Returns the RRF ranking unchanged. No configuration needed; useful for
-development, testing, and environments where an LLM API is unavailable.
+Re-ranks candidates by keyword overlap between the query and program
+descriptions. No configuration needed; useful for development, testing, and
+environments where an LLM API is unavailable.
 
 ```bash
 RECSYS_LLM_PROVIDER=mock
