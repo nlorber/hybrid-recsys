@@ -61,26 +61,30 @@ query
 > **Note:** First run downloads ~560 MB of models (3 spaCy + sentence-transformers). Allow 5-10 minutes on a typical connection.
 
 ```bash
-# 1. Clone
+# 1. Clone & install (one command installs all dependencies + language models)
 git clone https://github.com/nlorber/hybrid-recsys.git
 cd hybrid-recsys
+make setup
 
-# 2. Install
+# 2. Generate a synthetic catalog and build indexes
+poetry run python scripts/generate_catalog.py
+poetry run hybrid-recsys index
+
+# 3. Run a demo query
+poetry run hybrid-recsys demo "true crime podcast" --lang en --size 3
+```
+
+<details>
+<summary>Manual install (without Make)</summary>
+
+```bash
 poetry install
-
-# 3. Download language models and corpora
 poetry run python -m spacy download en_core_web_sm
 poetry run python -m spacy download fr_core_news_sm
 poetry run python -m spacy download de_core_news_sm
 poetry run python -m nltk.downloader stopwords
-
-# 4. Generate a synthetic catalog and build indexes
-poetry run python scripts/generate_catalog.py
-poetry run hybrid-recsys index
-
-# 5. Run a demo query
-poetry run hybrid-recsys demo "true crime podcast" --lang en --size 3
 ```
+</details>
 
 ---
 
