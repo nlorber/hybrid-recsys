@@ -146,7 +146,7 @@ class TestRecommendationPipeline:
     def test_media_are_earliest_episodes(self, pipeline_env) -> None:
         request = RecoRequest(query="technology", lang="en", size=5)
         response = pipeline_env.recommend(request)
-        # m1 is episode 1 of p1, m2 is episode 2. Only m1 should appear.
-        if "m1" in response.medias or "m2" in response.medias:
-            assert "m1" in response.medias
-            assert "m2" not in response.medias
+        # p1 has two episodes: m1 (ep 1) and m2 (ep 2).
+        # With size=5 and 5 programs, p1 must appear, so m1 must be in results.
+        assert "m1" in response.medias, "earliest episode m1 must appear"
+        assert "m2" not in response.medias, "later episode m2 must not appear"
