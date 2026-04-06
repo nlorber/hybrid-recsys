@@ -43,9 +43,9 @@ class Vectorizer:
             by_lang.setdefault(item.lang, []).append(item)
 
         for lang, items in by_lang.items():
-            logger.info(f"Building index for '{lang}' ({len(items)} programs)")
+            logger.info("Building index for '%s' (%d programs)", lang, len(items))
             self._build_language(lang, items)
-            logger.info(f"Index for '{lang}' saved")
+            logger.info("Index for '%s' saved", lang)
 
     def _build_language(self, lang: str, items: list[CatalogItem]) -> None:
         """Build and save index for a single language."""
@@ -53,11 +53,11 @@ class Vectorizer:
         descriptions = [item.description for item in items]
 
         # Generate embeddings
-        logger.info(f"Generating embeddings for {len(items)} programs")
+        logger.info("Generating embeddings for %d programs", len(items))
         embedding_vectors = self._embedder.embed_batch(descriptions)
 
         # Fit TF-IDF
-        logger.info(f"Fitting TF-IDF for {len(items)} programs")
+        logger.info("Fitting TF-IDF for %d programs", len(items))
         tfidf_vectorizer, tfidf_vectors = self._tfidf.fit_transform(
             program_ids, descriptions, lang
         )

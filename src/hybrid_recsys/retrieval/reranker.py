@@ -87,7 +87,7 @@ def parse_rerank_response(response: str) -> list[str]:
         if isinstance(result, list) and all(isinstance(x, str) for x in result):
             return result
     except (SyntaxError, ValueError):
-        logger.warning(f"Failed to parse LLM rerank response: {response[:200]}")
+        logger.warning("Failed to parse LLM rerank response: %s", response[:200])
     return []
 
 
@@ -116,7 +116,9 @@ def rerank_programs(
         List of program_ids of length <= size.
     """
     if len(rrf_ranking) <= size:
-        logger.info(f"RRF produced {len(rrf_ranking)} results <= {size}, skipping LLM")
+        logger.info(
+            "RRF produced %d results <= %d, skipping LLM", len(rrf_ranking), size
+        )
         return rrf_ranking
 
     candidates = [
@@ -132,7 +134,7 @@ def rerank_programs(
 
     # Pad if LLM underselected
     if len(result) < size:
-        logger.warning(f"LLM returned {len(result)} < {size}, padding from RRF")
+        logger.warning("LLM returned %d < %d, padding from RRF", len(result), size)
         seen = set(result)
         for pid in rrf_ranking:
             if pid not in seen:
