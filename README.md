@@ -56,6 +56,8 @@ query
 
 ## Quick Start
 
+> **Note:** First run downloads ~560 MB of models (3 spaCy + sentence-transformers). Allow 5-10 minutes on a typical connection.
+
 ```bash
 # 1. Clone
 git clone https://github.com/nlorber/hybrid-recsys.git
