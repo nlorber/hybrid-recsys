@@ -2,12 +2,36 @@
 
 import json
 import logging
+import platform
+import sys
 
 import typer
 
 from hybrid_recsys.config import Settings
 
 app = typer.Typer(help="Multilingual hybrid recommendation engine")
+
+
+def _warn_macos_arm64() -> None:
+    """Warn about Annoy 1.17.3 single-result bug on macOS arm64 + Python 3.12."""
+    if (
+        platform.system() == "Darwin"
+        and platform.machine() == "arm64"
+        and sys.version_info[:2] == (3, 12)
+    ):
+        logging.getLogger(__name__).warning(
+            "macOS arm64 + Python 3.12 detected. "
+            "Annoy 1.17.3 may return only 1 result per query. "
+            "Use Python 3.11 or run on Linux to avoid this issue."
+        )
+
+
+@app.callback(invoke_without_command=True)
+def _main(ctx: typer.Context) -> None:
+    """Check platform before running any command."""
+    _warn_macos_arm64()
+    if ctx.invoked_subcommand is None:
+        raise typer.Exit()
 
 
 @app.command()
