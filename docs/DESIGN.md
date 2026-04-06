@@ -144,8 +144,8 @@ receive only the natural `1/(delta²+1)` decay.
 Indexes are built per language at index time and stored as static files under
 `data/index/<lang>/`. Each language bundle contains:
 
-- `embedding.ann` — Annoy index of program embedding vectors
-- `tfidf.ann` — Annoy index of TF-IDF sparse vectors projected to a dense space
+- `ann_embedding.ann` — Annoy index of program embedding vectors
+- `ann_tfidf.ann` — Annoy index of TF-IDF sparse vectors projected to a dense space
 - `tfidf_vectorizer.pkl` — fitted `TfidfVectorizer` (for query transformation)
 - `metadata.json` — program IDs, descriptions, and media episode data
 
