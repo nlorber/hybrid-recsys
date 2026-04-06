@@ -1,6 +1,5 @@
 """Tests for the recommendation pipeline with mock providers."""
 
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -37,7 +36,7 @@ class FakeEmbeddingProvider(EmbeddingProvider):
 
 
 @pytest.fixture
-def pipeline_env():
+def pipeline_env(tmp_path: Path):
     """Set up a pipeline with fake data and mock providers."""
     dim = 8
     embedder = FakeEmbeddingProvider(dim=dim)
@@ -87,14 +86,13 @@ def pipeline_env():
         tfidf_dim=tfidf_dim,
     )
 
-    tmpdir = tempfile.mkdtemp()
     store = IndexStore()
-    store.save("en", index, Path(tmpdir))
+    store.save("en", index, tmp_path)
 
     class TestSettings(Settings):
         @property
         def index_dir(self) -> Path:
-            return Path(tmpdir)
+            return tmp_path
 
     pipeline = RecommendationPipeline(
         embedding_provider=embedder,
