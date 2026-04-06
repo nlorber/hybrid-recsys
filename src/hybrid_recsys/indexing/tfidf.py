@@ -6,6 +6,9 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from hybrid_recsys.providers.nlp.spacy import SpacyNLP
 
+# Caps vocabulary size to control memory usage and noise from rare terms
+MAX_TFIDF_FEATURES = 10_000
+
 
 class TfidfPipeline:
     """Fit TF-IDF on a corpus and transform queries.
@@ -34,7 +37,7 @@ class TfidfPipeline:
             Tuple of (fitted vectorizer, dict mapping program_id to TF-IDF vector).
         """
         processed = [self._nlp.preprocess(desc, lang) for desc in descriptions]
-        vectorizer = TfidfVectorizer(max_features=10_000)
+        vectorizer = TfidfVectorizer(max_features=MAX_TFIDF_FEATURES)
         matrix = vectorizer.fit_transform(processed)
 
         vectors: dict[str, list[float]] = {}

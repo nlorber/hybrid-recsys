@@ -15,6 +15,9 @@ from hybrid_recsys.retrieval.fusion import reciprocal_rank_fusion
 from hybrid_recsys.retrieval.reranker import rerank_programs
 from hybrid_recsys.retrieval.scorer import duration_score
 
+# How many media candidates to consider per requested result
+MEDIA_CANDIDATE_MULTIPLIER = 3
+
 logger = logging.getLogger(__name__)
 
 
@@ -132,12 +135,12 @@ class RecommendationPipeline:
         # Media from embedding-ranked programs (ordered by program rank)
         emb_media = [
             earliest[pid]["media_id"] for pid in emb_programs if pid in earliest
-        ][: size * 3]
+        ][: size * MEDIA_CANDIDATE_MULTIPLIER]
 
         # Media from TF-IDF-ranked programs (ordered by program rank)
         tfidf_media = [
             earliest[pid]["media_id"] for pid in tfidf_programs if pid in earliest
-        ][: size * 3]
+        ][: size * MEDIA_CANDIDATE_MULTIPLIER]
 
         # Media scored by duration proximity
         duration_scored = []
@@ -149,7 +152,9 @@ class RecommendationPipeline:
             score = duration_score(delta, penalty=self._settings.duration_penalty)
             duration_scored.append((ep["media_id"], score))
         duration_scored.sort(key=lambda x: x[1], reverse=True)
-        duration_media = [mid for mid, _ in duration_scored][: size * 3]
+        duration_media = [mid for mid, _ in duration_scored][
+            : size * MEDIA_CANDIDATE_MULTIPLIER
+        ]
 
         # RRF fuse media lists
         return reciprocal_rank_fusion(
