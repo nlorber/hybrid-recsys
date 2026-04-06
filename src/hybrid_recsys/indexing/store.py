@@ -82,6 +82,7 @@ class IndexStore:
         ann_tfidf.load(str(lang_dir / "ann_tfidf.ann"))
 
         with open(lang_dir / "tfidf_vectorizer.pkl", "rb") as f:
+            # Safe: only loading self-generated index metadata from trusted local files
             tfidf_vectorizer = pickle.load(f)  # noqa: S301
 
         return LanguageIndex(
