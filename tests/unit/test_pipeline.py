@@ -152,14 +152,28 @@ class TestRecommendationPipeline:
         assert "m2" not in response.medias, "later episode m2 must not appear"
 
     def test_mock_llm_reranks_by_keyword_overlap(self) -> None:
-        """Mock LLM should favor programs whose descriptions match the query."""
+        """Mock LLM should favor programs whose descriptions match."""
         mock = MockLLMProvider()
         candidates = [
-            {"program_id": "p1", "description": "Technology and artificial intelligence advances"},
-            {"program_id": "p2", "description": "History of ancient Roman civilization"},
-            {"program_id": "p3", "description": "Space exploration and astronomy discoveries"},
+            {
+                "program_id": "p1",
+                "description": "Technology and AI advances",
+            },
+            {
+                "program_id": "p2",
+                "description": "History of ancient Roman civilization",
+            },
+            {
+                "program_id": "p3",
+                "description": "Space exploration and astronomy",
+            },
         ]
-        result = mock.rerank(query="history ancient Roman", candidates=candidates, size=2, lang="en")
-        # p2 = "History of ancient Roman civilization" — best keyword match (3/3 words)
+        result = mock.rerank(
+            query="history ancient Roman",
+            candidates=candidates,
+            size=2,
+            lang="en",
+        )
+        # p2 best keyword match (3 words overlap)
         assert result[0] == "p2"
         assert len(result) == 2

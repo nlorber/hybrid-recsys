@@ -19,7 +19,8 @@ class TestPrecisionAtK:
         assert precision_at_k(["x", "y", "z"], {"a", "b", "c"}, k=3) == 0.0
 
     def test_partial_precision(self) -> None:
-        assert precision_at_k(["a", "x", "b"], {"a", "b", "c"}, k=3) == pytest.approx(2 / 3)
+        result = precision_at_k(["a", "x", "b"], {"a", "b", "c"}, k=3)
+        assert result == pytest.approx(2 / 3)
 
     def test_k_smaller_than_list(self) -> None:
         assert precision_at_k(["a", "b", "c"], {"a", "b"}, k=2) == 1.0
