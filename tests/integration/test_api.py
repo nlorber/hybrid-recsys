@@ -1,6 +1,5 @@
 """Integration tests for the FastAPI app."""
 
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -27,9 +26,8 @@ class StubEmbeddingProvider(EmbeddingProvider):
 
 
 @pytest.fixture
-def test_index_dir():
+def test_index_dir(tmp_path: Path):
     """Create a temporary index with test data."""
-    tmpdir = tempfile.mkdtemp()
     dim = 8
     tfidf_dim = 3
 
@@ -69,8 +67,8 @@ def test_index_dir():
     )
 
     store = IndexStore()
-    store.save("en", index, Path(tmpdir))
-    return tmpdir
+    store.save("en", index, tmp_path)
+    return tmp_path
 
 
 @pytest.fixture
@@ -80,7 +78,7 @@ def client(test_index_dir):
     class TestSettings(Settings):
         @property
         def index_dir(self) -> Path:
-            return Path(test_index_dir)
+            return test_index_dir
 
     pipeline = RecommendationPipeline(
         embedding_provider=StubEmbeddingProvider(),
