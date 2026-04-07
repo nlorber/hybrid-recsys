@@ -2,6 +2,9 @@
 
 ![CI](https://github.com/nlorber/hybrid-recsys/actions/workflows/test.yml/badge.svg)
 ![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/nlorber/658807b3d9251dbce468b6c738ccd10d/raw/coverage-hybrid-recsys.json)
+![Python](https://img.shields.io/badge/python-3.11+-blue)
+![mypy](https://img.shields.io/badge/type_check-mypy_strict-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 Multilingual content recommendation engine combining dual retrieval, Reciprocal
 Rank Fusion, and LLM re-ranking.
