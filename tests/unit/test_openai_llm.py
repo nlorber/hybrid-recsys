@@ -43,7 +43,8 @@ class TestRerank:
 
         provider.rerank("machine learning", SAMPLE_CANDIDATES, size=1, lang="en")
 
-        prompt = mock_openai.chat.completions.create.call_args[1]["messages"][0]["content"]
+        call_kwargs = mock_openai.chat.completions.create.call_args[1]
+        prompt = call_kwargs["messages"][0]["content"]
         assert "machine learning" in prompt
         assert "prog_1" in prompt
         assert "A show about AI" in prompt
@@ -59,7 +60,8 @@ class TestRerank:
 
         provider.rerank("query", SAMPLE_CANDIDATES, size=1, lang="fr")
 
-        prompt = mock_openai.chat.completions.create.call_args[1]["messages"][0]["content"]
+        call_kwargs = mock_openai.chat.completions.create.call_args[1]
+        prompt = call_kwargs["messages"][0]["content"]
         assert "Sélectionne" in prompt or "programme" in prompt
 
     def test_sends_temperature_zero(
