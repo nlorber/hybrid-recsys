@@ -1,14 +1,10 @@
 """Tests for offline evaluation metrics."""
 
 import math
-import sys
-from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent / "scripts"))
-
-from evaluate import dcg_at_k, ndcg_at_k, precision_at_k, recall_at_k
+from hybrid_recsys.metrics import dcg_at_k, ndcg_at_k, precision_at_k, recall_at_k
 
 
 class TestPrecisionAtK:
