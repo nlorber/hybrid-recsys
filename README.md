@@ -54,6 +54,32 @@ query
 
 ---
 
+## Results
+
+Measured on the 200-program synthetic catalog (667 media items across `en`, `fr`, `de`).
+
+### Latency
+
+| Metric | Value |
+|--------|-------|
+| p50    | 9.7 ms |
+| p95    | 11.7 ms |
+| Max    | 43.2 ms |
+
+Benchmarked over 100 queries, single-threaded, no LLM re-ranking. Latency is dominated by Annoy ANN search and feature extraction.
+
+### Retrieval Quality
+
+| Metric | @3 | @5 |
+|--------|----|----|
+| Precision | 0.133 | 0.133 |
+| Recall | 0.023 | 0.023 |
+| nDCG | 0.133 | 0.133 |
+
+Precision is 1.0 for queries that overlap with catalog topics (e.g., "artificial intelligence") and 0.0 for topics with no matching programs. These metrics reflect the synthetic catalog's limited topic coverage (10 topics across 200 programs), not the retrieval algorithm's ceiling. On a production catalog with broader coverage, the dual-retrieval + RRF fusion approach yields substantially higher recall.
+
+---
+
 ## Quick Start
 
 > **Note:** First run downloads ~560 MB of models (3 spaCy + sentence-transformers). Allow 5-10 minutes on a typical connection.
