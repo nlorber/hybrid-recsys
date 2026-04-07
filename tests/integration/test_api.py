@@ -9,20 +9,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from hybrid_recsys.api import app
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
-from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.ann_search import build_annoy_index
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
-
-
-class StubEmbeddingProvider(EmbeddingProvider):
-    """Minimal embedding provider for integration tests."""
-
-    def embed(self, text: str) -> list[float]:
-        return [0.1] * 8
-
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        return [[0.1 * (i + 1)] * 8 for i in range(len(texts))]
+from tests.conftest import FixedEmbedder
 
 
 @pytest.fixture
@@ -81,7 +71,7 @@ def client(test_index_dir):
             return test_index_dir
 
     pipeline = RecommendationPipeline(
-        embedding_provider=StubEmbeddingProvider(),
+        embedding_provider=FixedEmbedder(),
         llm_provider=MockLLMProvider(),
         settings=TestSettings(),
     )

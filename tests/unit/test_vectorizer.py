@@ -2,47 +2,12 @@
 
 from pathlib import Path
 
-import pytest
-
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore
 from hybrid_recsys.indexing.vectorizer import Vectorizer
 from hybrid_recsys.models import CatalogItem, MediaItem
-from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.nlp.spacy import SpacyNLP
-
-
-class FixedEmbedder(EmbeddingProvider):
-    """Returns distinct deterministic embeddings per batch position."""
-
-    def embed(self, text: str) -> list[float]:
-        return [0.1] * 8
-
-    def embed_batch(self, texts: list[str]) -> list[list[float]]:
-        return [[0.1 * (i + 1)] * 8 for i in range(len(texts))]
-
-
-@pytest.fixture
-def small_catalog():
-    return [
-        CatalogItem(
-            program_id="p1",
-            title="Tech show",
-            description="Technology and artificial intelligence",
-            lang="en",
-            media=[MediaItem(media_id="m1", episode=1, duration=600, title="Ep1")],
-        ),
-        CatalogItem(
-            program_id="p2",
-            title="History show",
-            description="History of ancient Rome",
-            lang="en",
-            media=[
-                MediaItem(media_id="m2", episode=1, duration=900, title="Ep1"),
-                MediaItem(media_id="m3", episode=2, duration=1200, title="Ep2"),
-            ],
-        ),
-    ]
+from tests.conftest import FixedEmbedder
 
 
 class TestVectorizerBuild:
