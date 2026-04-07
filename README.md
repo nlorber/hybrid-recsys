@@ -1,8 +1,7 @@
 # hybrid-recsys
 
 ![CI](https://github.com/nlorber/hybrid-recsys/actions/workflows/test.yml/badge.svg)
-<!-- Coverage badge: manually maintained — update after significant test changes -->
-![Coverage](https://img.shields.io/badge/coverage-83%25-yellowgreen)
+![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/nlorber/658807b3d9251dbce468b6c738ccd10d/raw/coverage-hybrid-recsys.json)
 
 Multilingual content recommendation engine combining dual retrieval, Reciprocal
 Rank Fusion, and LLM re-ranking.
@@ -70,13 +69,15 @@ Benchmarked over 100 queries, single-threaded, no LLM re-ranking. Latency is dom
 
 ### Retrieval Quality
 
+The synthetic catalog covers 10 topics across 200 programs. Queries that match a catalog topic (e.g., "artificial intelligence") achieve precision@3 = 1.0; queries outside the catalog's topic coverage return no relevant results. This binary hit-or-miss pattern is a catalog coverage limitation, not an algorithm limitation — on a production catalog with broader topic diversity, dual-retrieval + RRF fusion yields substantially higher recall.
+
+Aggregate metrics across all queries (including out-of-coverage):
+
 | Metric | @3 | @5 |
 |--------|----|----|
 | Precision | 0.133 | 0.133 |
 | Recall | 0.023 | 0.023 |
 | nDCG | 0.133 | 0.133 |
-
-Precision is 1.0 for queries that overlap with catalog topics (e.g., "artificial intelligence") and 0.0 for topics with no matching programs. These metrics reflect the synthetic catalog's limited topic coverage (10 topics across 200 programs), not the retrieval algorithm's ceiling. On a production catalog with broader coverage, the dual-retrieval + RRF fusion approach yields substantially higher recall.
 
 ---
 
