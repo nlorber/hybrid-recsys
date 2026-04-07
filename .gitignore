@@ -9,7 +9,6 @@ docs/superpowers/
 .pytest_cache/
 .mypy_cache/
 .env
-node_modules/
 models/
 .DS_Store
 .claude/
