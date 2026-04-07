@@ -7,8 +7,6 @@
 Multilingual content recommendation engine combining dual retrieval, Reciprocal
 Rank Fusion, and LLM re-ranking.
 
-> **Note:** This project is an anonymized and rewritten version of a system originally built in a professional context. All proprietary code, data, company references, and internal infrastructure details have been removed. The synthetic podcast catalog replaces real content data.
-
 ---
 
 ## Architecture
