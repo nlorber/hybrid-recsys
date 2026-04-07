@@ -30,7 +30,7 @@ jobs:
           restore-keys: poetry-
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --with openai
 
       - name: Download spaCy models
         run: |
