@@ -54,7 +54,7 @@ def index() -> None:
     )
     from hybrid_recsys.providers.nlp.spacy import SpacyNLP
 
-    with open(catalog_path) as f:
+    with open(catalog_path, encoding="utf-8") as f:
         data = json.load(f)
     catalog = [CatalogItem(**p) for p in data["programs"]]
     typer.echo(f"Loaded {len(catalog)} programs from {catalog_path}")
@@ -84,6 +84,18 @@ def demo(
     """Index the catalog and run a single recommendation query."""
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     settings = Settings()
+
+    # Generate catalog if not present
+    if not settings.catalog_path.exists():
+        typer.echo("Catalog not found. Generating synthetic catalog...")
+        from pathlib import Path as _Path
+
+        root = _Path(__file__).resolve().parents[2]
+        script = root / "scripts" / "generate_catalog.py"
+        import subprocess
+
+        subprocess.run([sys.executable, str(script)], check=True)
+        typer.echo(f"Catalog written to {settings.catalog_path}")
 
     # Build indexes if not present
     if not settings.index_dir.exists() or not any(settings.index_dir.iterdir()):
