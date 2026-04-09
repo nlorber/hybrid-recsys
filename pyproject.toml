@@ -1,52 +1,68 @@
-[tool.poetry]
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
 name = "hybrid-recsys"
 version = "0.1.0"
 description = "Multilingual hybrid recommendation engine: dual retrieval, RRF, LLM re-ranking"
-authors = ["Nathan Lorber"]
 readme = "README.md"
-packages = [{include = "hybrid_recsys", from = "src"}]
+license = { file = "LICENSE" }
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0,<3",
+    "pydantic-settings>=2.0,<3",
+    "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.34,<1",
+    "annoy>=1.17,<2",
+    "scikit-learn>=1.6,<2",
+    "sentence-transformers>=4.0,<5",
+    "spacy>=3.8,<4",
+    "nltk>=3.9,<4",
+    "typer>=0.15,<1",
+]
 
-[tool.poetry.scripts]
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0,<9",
+    "pytest-cov>=7.0,<8",
+    "httpx>=0.28,<1",
+    "ruff>=0.11,<1",
+    "mypy>=1.20,<2",
+    "pre-commit>=3.7,<4",
+]
+openai = [
+    "openai>=1.60,<2",
+]
+
+[project.scripts]
 hybrid-recsys = "hybrid_recsys.cli:app"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-pydantic = "^2.0"
-pydantic-settings = "^2.0"
-fastapi = "^0.115"
-uvicorn = {extras = ["standard"], version = "^0.34"}
-annoy = "^1.17"
-scikit-learn = "^1.6"
-sentence-transformers = "^4.0"
-spacy = "^3.8"
-nltk = "^3.9"
-typer = "^0.15"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-pytest-cov = "^7.0"
-httpx = "^0.28"
-ruff = "^0.11"
-mypy = "^1.20.0"
-
-[tool.poetry.group.openai]
-optional = true
-
-[tool.poetry.group.openai.dependencies]
-openai = "^1.60"
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.ruff]
+line-length = 99
 target-version = "py311"
-src = ["src"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "A", "SIM", "TCH", "G"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "--cov=hybrid_recsys --cov-report=term-missing --cov-fail-under=80"
 
 [tool.mypy]
+python_version = "3.11"
 strict = true
 plugins = ["pydantic.mypy"]
 
@@ -60,7 +76,3 @@ module = [
     "sentence_transformers",
 ]
 ignore_missing_imports = true
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
