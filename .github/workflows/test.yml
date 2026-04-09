@@ -7,42 +7,46 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  ci:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
         with:
           python-version: "3.11"
 
-      - name: Install Poetry
-        run: pipx install poetry
-
-      - name: Cache Poetry virtualenv
+      - name: Cache uv virtualenv
         uses: actions/cache@v4
         with:
           path: |
-            ~/.cache/pypoetry
+            ~/.cache/uv
             .venv
-          key: poetry-${{ hashFiles('poetry.lock') }}
-          restore-keys: poetry-
+          key: uv-${{ hashFiles('uv.lock') }}
+          restore-keys: uv-
 
       - name: Install dependencies
-        run: poetry install --with openai
+        run: uv sync --extra dev --extra openai
 
       - name: Download spaCy models
         run: |
-          poetry run python -m spacy download fr_core_news_sm
-          poetry run python -m spacy download en_core_web_sm
-          poetry run python -m spacy download de_core_news_sm
+          uv run python -m spacy download fr_core_news_sm
+          uv run python -m spacy download en_core_web_sm
+          uv run python -m spacy download de_core_news_sm
 
       - name: Download NLTK data
-        run: poetry run python -c "import nltk; nltk.download('stopwords')"
+        run: uv run python -c "import nltk; nltk.download('stopwords')"
+
+      - name: Lint
+        run: make lint
+
+      - name: Type check
+        run: make typecheck
 
       - name: Test with coverage
-        run: poetry run pytest --cov=hybrid_recsys --cov-report=json --tb=short
+        run: uv run pytest --cov=hybrid_recsys --cov-report=json --cov-fail-under=80 --tb=short
 
       - name: Extract coverage
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -63,9 +67,3 @@ jobs:
           valColorRange: ${{ steps.coverage.outputs.percentage }}
           minColorRange: 50
           maxColorRange: 90
-
-      - name: Lint
-        run: poetry run ruff check src/ tests/
-
-      - name: Type check
-        run: poetry run mypy --strict src/
