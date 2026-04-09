@@ -13,33 +13,26 @@ Rank Fusion, and LLM re-ranking.
 
 ## Architecture
 
-```
-query
-  │
-  ├─── embed (dense) ──────────────────┐
-  │                                    │
-  └─── TF-IDF vectorise ───────────────┤
-                                       │
-                              ANN search (Annoy)
-                                       │
-                                  RRF fusion
-                                  (programs)
-                                       │
-                                  LLM rerank
-                                (with fallback)
-                                       │
-                                    programs
-                                       │
-              ┌────────────────────────┼──────────────────────┐
-              ▼                        ▼                      ▼
-       emb media list         tfidf media list        duration scoring
-              │                        │                      │
-              └────────────────────────┼──────────────────────┘
-                                       │
-                                  RRF fusion
-                                   (media)
-                                       │
-                                     media
+```mermaid
+flowchart TD
+    Q[Query] --> EMB[Dense Embedding]
+    Q --> TFIDF[TF-IDF Vectorise]
+
+    EMB --> ANN[Annoy ANN Search\nper-language indexes]
+    TFIDF --> ANN
+
+    ANN --> RRF1[RRF Fusion\nprograms]
+    RRF1 --> LLM[LLM Re-rank\nwith fallback]
+
+    LLM --> EMB_M[Embedding\nmedia list]
+    LLM --> TFIDF_M[TF-IDF\nmedia list]
+    LLM --> DUR[Duration\nscoring]
+
+    EMB_M --> RRF2[RRF Fusion\nmedia]
+    TFIDF_M --> RRF2
+    DUR --> RRF2
+
+    RRF2 --> OUT[Final media ranking]
 ```
 
 **Pipeline in plain English:**
