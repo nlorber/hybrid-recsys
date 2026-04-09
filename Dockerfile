@@ -4,29 +4,31 @@ FROM python:3.11-slim AS builder
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
-RUN pip install --no-cache-dir poetry && \
-    poetry config virtualenvs.in-project true
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy
 
 WORKDIR /app
 
 ENV HF_HOME=/app/.hf_cache
 
-COPY pyproject.toml poetry.lock ./
-RUN poetry install --without dev --no-root
+COPY pyproject.toml uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
 
 COPY src/ src/
 COPY scripts/ scripts/
-RUN poetry install --without dev
+RUN uv sync --frozen --no-dev
 
 ENV NLTK_DATA=/app/.venv/nltk_data
 
-RUN poetry run python -m spacy download fr_core_news_sm && \
-    poetry run python -m spacy download en_core_web_sm && \
-    poetry run python -m spacy download de_core_news_sm && \
-    poetry run python -c "import nltk; nltk.download('stopwords')"
+RUN uv run python -m spacy download fr_core_news_sm && \
+    uv run python -m spacy download en_core_web_sm && \
+    uv run python -m spacy download de_core_news_sm && \
+    uv run python -c "import nltk; nltk.download('stopwords')"
 
-RUN poetry run python scripts/generate_catalog.py && \
-    poetry run hybrid-recsys index
+RUN uv run python scripts/generate_catalog.py && \
+    uv run hybrid-recsys index
 
 # ---- runtime ----
 FROM python:3.11-slim

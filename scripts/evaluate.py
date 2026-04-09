@@ -4,7 +4,7 @@ Computes precision@k, recall@k, and nDCG on topic-based relevance: a query about
 a topic (e.g. "AI") should rank programs in that topic family higher.
 
 Usage:
-    poetry run python scripts/evaluate.py
+    uv run python scripts/evaluate.py
 """
 
 from __future__ import annotations

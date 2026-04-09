@@ -25,7 +25,7 @@ The model is downloaded from HuggingFace on first use and cached locally.
 
 ### OpenAI
 
-Requires the optional `openai` extra: `poetry install --with openai`.
+Requires the optional `openai` extra: `uv sync --extra openai`.
 
 ```bash
 RECSYS_EMBEDDING_PROVIDER=openai
@@ -46,7 +46,7 @@ RECSYS_OPENAI_BASE_URL=https://your-resource.openai.azure.com/
 
 > **Note:** After switching embedding providers, always rebuild the indexes:
 > ```bash
-> poetry run hybrid-recsys index
+> uv run hybrid-recsys index
 > ```
 > Mixing vectors from different providers produces meaningless ANN results.
 
@@ -69,7 +69,7 @@ RECSYS_LLM_PROVIDER=mock
 
 ### OpenAI
 
-Requires the optional `openai` extra: `poetry install --with openai`.
+Requires the optional `openai` extra: `uv sync --extra openai`.
 
 ```bash
 RECSYS_LLM_PROVIDER=openai

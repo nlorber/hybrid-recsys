@@ -1,7 +1,7 @@
 """Latency benchmark: times recommendation queries and reports p50/p95.
 
 Usage:
-    poetry run python scripts/benchmark_latency.py [--n 100] [--lang en] [--size 3]
+    uv run python scripts/benchmark_latency.py [--n 100] [--lang en] [--size 3]
 """
 
 from __future__ import annotations
