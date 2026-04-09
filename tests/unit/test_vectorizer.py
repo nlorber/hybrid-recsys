@@ -42,18 +42,14 @@ class TestVectorizerBuild:
                 title="English show",
                 description="English technology content",
                 lang="en",
-                media=[
-                    MediaItem(media_id="m1", episode=1, duration=600, title="E1")
-                ],
+                media=[MediaItem(media_id="m1", episode=1, duration=600, title="E1")],
             ),
             CatalogItem(
                 program_id="fr1",
                 title="French show",
                 description="Technologie française contenu",
                 lang="fr",
-                media=[
-                    MediaItem(media_id="m2", episode=1, duration=600, title="E1")
-                ],
+                media=[MediaItem(media_id="m2", episode=1, duration=600, title="E1")],
             ),
         ]
 

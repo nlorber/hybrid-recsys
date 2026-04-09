@@ -69,9 +69,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
 def get_pipeline(request: Request) -> RecommendationPipeline:
     """FastAPI dependency: resolve the recommendation pipeline from app state."""
-    pipeline: RecommendationPipeline | None = getattr(
-        request.app.state, "pipeline", None
-    )
+    pipeline: RecommendationPipeline | None = getattr(request.app.state, "pipeline", None)
     if pipeline is None:
         raise HTTPException(status_code=503, detail="Pipeline not initialized")
     return pipeline

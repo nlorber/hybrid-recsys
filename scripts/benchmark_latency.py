@@ -10,7 +10,6 @@ import argparse
 import statistics
 import sys
 import time
-from pathlib import Path
 
 
 def run_benchmark(n: int, lang: str, size: int) -> None:
@@ -31,10 +30,18 @@ def run_benchmark(n: int, lang: str, size: int) -> None:
     pipeline = RecommendationPipeline(embedder, llm, settings)
 
     queries = [
-        "artificial intelligence", "true crime podcast", "history of Rome",
-        "science for kids", "football highlights", "jazz music",
-        "climate change", "philosophy of mind", "travel adventure",
-        "health and nutrition", "comedy show", "business strategy",
+        "artificial intelligence",
+        "true crime podcast",
+        "history of Rome",
+        "science for kids",
+        "football highlights",
+        "jazz music",
+        "climate change",
+        "philosophy of mind",
+        "travel adventure",
+        "health and nutrition",
+        "comedy show",
+        "business strategy",
     ]
 
     # Warm up (load index + model)

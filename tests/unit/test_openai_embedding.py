@@ -17,9 +17,7 @@ def mock_openai() -> MagicMock:
 
 @pytest.fixture()
 def provider(mock_openai: MagicMock) -> OpenAIEmbeddingProvider:
-    with patch(
-        "hybrid_recsys.providers.embeddings.openai.OpenAI", return_value=mock_openai
-    ):
+    with patch("hybrid_recsys.providers.embeddings.openai.OpenAI", return_value=mock_openai):
         p = OpenAIEmbeddingProvider(api_key="test-key", model="text-embedding-3-small")
     return p
 
@@ -58,9 +56,7 @@ class TestEmbedBatch:
 
     def test_respects_custom_base_url(self) -> None:
         """Verify base_url is forwarded to the OpenAI client (Azure scenario)."""
-        with patch(
-            "hybrid_recsys.providers.embeddings.openai.OpenAI"
-        ) as mock_cls:
+        with patch("hybrid_recsys.providers.embeddings.openai.OpenAI") as mock_cls:
             OpenAIEmbeddingProvider(
                 api_key="k", model="m", base_url="https://my-azure.openai.azure.com"
             )

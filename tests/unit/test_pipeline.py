@@ -56,9 +56,7 @@ def pipeline_env(tmp_path: Path):
 
     vectorizer = TfidfVectorizer()
     matrix = vectorizer.fit_transform(desc_list)
-    tfidf_vectors = [
-        matrix[i].toarray().flatten().tolist() for i in range(len(desc_list))
-    ]  # noqa: E501
+    tfidf_vectors = [matrix[i].toarray().flatten().tolist() for i in range(len(desc_list))]  # noqa: E501
     tfidf_dim = len(tfidf_vectors[0])
 
     ann_emb = build_annoy_index(emb_vectors, metric="angular", n_trees=10)

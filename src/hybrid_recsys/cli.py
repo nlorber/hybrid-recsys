@@ -42,9 +42,7 @@ def index() -> None:
 
     catalog_path = settings.catalog_path
     if not catalog_path.exists():
-        typer.echo(
-            f"Catalog not found at {catalog_path}. Run generate_catalog.py first."
-        )
+        typer.echo(f"Catalog not found at {catalog_path}. Run generate_catalog.py first.")
         raise typer.Exit(1)
 
     from hybrid_recsys.indexing.vectorizer import Vectorizer

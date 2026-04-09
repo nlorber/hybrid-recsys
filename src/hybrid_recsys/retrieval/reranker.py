@@ -116,14 +116,11 @@ def rerank_programs(
         List of program_ids of length <= size.
     """
     if len(rrf_ranking) <= size:
-        logger.info(
-            "RRF produced %d results <= %d, skipping LLM", len(rrf_ranking), size
-        )
+        logger.info("RRF produced %d results <= %d, skipping LLM", len(rrf_ranking), size)
         return rrf_ranking
 
     candidates = [
-        {"program_id": pid, "description": descriptions.get(pid, "")}
-        for pid in rrf_ranking
+        {"program_id": pid, "description": descriptions.get(pid, "")} for pid in rrf_ranking
     ]
 
     try:

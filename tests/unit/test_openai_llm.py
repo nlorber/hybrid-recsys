@@ -17,9 +17,7 @@ def mock_openai() -> MagicMock:
 
 @pytest.fixture()
 def provider(mock_openai: MagicMock) -> OpenAILLMProvider:
-    with patch(
-        "hybrid_recsys.providers.llm.openai.OpenAI", return_value=mock_openai
-    ):
+    with patch("hybrid_recsys.providers.llm.openai.OpenAI", return_value=mock_openai):
         p = OpenAILLMProvider(api_key="test-key", model="gpt-4o-mini")
     return p
 
@@ -91,9 +89,5 @@ class TestRerank:
     def test_respects_custom_base_url(self) -> None:
         """Verify base_url is forwarded to the OpenAI client (Azure scenario)."""
         with patch("hybrid_recsys.providers.llm.openai.OpenAI") as mock_cls:
-            OpenAILLMProvider(
-                api_key="k", model="m", base_url="https://azure.openai.com"
-            )
-            mock_cls.assert_called_once_with(
-                api_key="k", base_url="https://azure.openai.com"
-            )
+            OpenAILLMProvider(api_key="k", model="m", base_url="https://azure.openai.com")
+            mock_cls.assert_called_once_with(api_key="k", base_url="https://azure.openai.com")

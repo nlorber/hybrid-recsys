@@ -133,14 +133,14 @@ class RecommendationPipeline:
             earliest[pid] = first_ep
 
         # Media from embedding-ranked programs (ordered by program rank)
-        emb_media = [
-            earliest[pid]["media_id"] for pid in emb_programs if pid in earliest
-        ][: size * MEDIA_CANDIDATE_MULTIPLIER]
+        emb_media = [earliest[pid]["media_id"] for pid in emb_programs if pid in earliest][
+            : size * MEDIA_CANDIDATE_MULTIPLIER
+        ]
 
         # Media from TF-IDF-ranked programs (ordered by program rank)
-        tfidf_media = [
-            earliest[pid]["media_id"] for pid in tfidf_programs if pid in earliest
-        ][: size * MEDIA_CANDIDATE_MULTIPLIER]
+        tfidf_media = [earliest[pid]["media_id"] for pid in tfidf_programs if pid in earliest][
+            : size * MEDIA_CANDIDATE_MULTIPLIER
+        ]
 
         # Media scored by duration proximity
         duration_scored = []
@@ -152,9 +152,7 @@ class RecommendationPipeline:
             score = duration_score(delta, penalty=self._settings.duration_penalty)
             duration_scored.append((ep["media_id"], score))
         duration_scored.sort(key=lambda x: x[1], reverse=True)
-        duration_media = [mid for mid, _ in duration_scored][
-            : size * MEDIA_CANDIDATE_MULTIPLIER
-        ]
+        duration_media = [mid for mid, _ in duration_scored][: size * MEDIA_CANDIDATE_MULTIPLIER]
 
         # RRF fuse media lists
         return reciprocal_rank_fusion(

@@ -49,8 +49,6 @@ class SpacyNLP:
         text = re.sub(r"\W+", " ", text.lower())
         doc = nlp(text)
         tokens = [
-            token.lemma_
-            for token in doc
-            if token.lemma_ not in stop_words and not token.is_punct
+            token.lemma_ for token in doc if token.lemma_ not in stop_words and not token.is_punct
         ]
         return " ".join(tokens)

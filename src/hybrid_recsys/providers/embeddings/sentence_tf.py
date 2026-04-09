@@ -12,9 +12,7 @@ class SentenceTransformerProvider(EmbeddingProvider):
     on 50+ languages including French and German).
     """
 
-    def __init__(
-        self, model_name: str = "paraphrase-multilingual-MiniLM-L12-v2"
-    ) -> None:
+    def __init__(self, model_name: str = "paraphrase-multilingual-MiniLM-L12-v2") -> None:
         self._model = SentenceTransformer(model_name)
 
     def embed(self, text: str) -> list[float]:

@@ -15,7 +15,6 @@ from pathlib import Path
 
 from hybrid_recsys.metrics import ndcg_at_k, precision_at_k, recall_at_k
 
-
 # ---------------------------------------------------------------------------
 # Topic-based relevance judgments
 # ---------------------------------------------------------------------------
@@ -43,12 +42,74 @@ TOPIC_QUERIES: dict[str, list[dict[str, object]]] = {
 }
 
 TOPIC_DESCRIPTION_KEYWORDS: dict[str, list[str]] = {
-    "Technology": ["artificial intelligence", "machine learning", "tech", "software", "computing", "intelligence artificielle", "numérique", "cybersécurité", "künstliche intelligenz", "digital"],
-    "History": ["history", "ancient", "civilization", "roman", "medieval", "histoire", "gaulois", "révolution", "civilisation", "geschichte", "imperien"],
-    "Science": ["scientific", "physics", "biology", "astronomy", "science", "scientifique", "physique", "biologie", "astronomie", "wissenschaft"],
-    "Sports": ["sports", "football", "rugby", "tennis", "athletic", "sport", "athlètes", "fußball"],
-    "Culture": ["arts", "culture", "cinema", "literature", "museum", "cinéma", "littérature", "kunst", "kultur"],
-    "Business": ["business", "entrepreneur", "economics", "finance", "entreprise", "management", "unternehmen", "wirtschaft"],
+    "Technology": [
+        "artificial intelligence",
+        "machine learning",
+        "tech",
+        "software",
+        "computing",
+        "intelligence artificielle",
+        "numérique",
+        "cybersécurité",
+        "künstliche intelligenz",
+        "digital",
+    ],
+    "History": [
+        "history",
+        "ancient",
+        "civilization",
+        "roman",
+        "medieval",
+        "histoire",
+        "gaulois",
+        "révolution",
+        "civilisation",
+        "geschichte",
+        "imperien",
+    ],
+    "Science": [
+        "scientific",
+        "physics",
+        "biology",
+        "astronomy",
+        "science",
+        "scientifique",
+        "physique",
+        "biologie",
+        "astronomie",
+        "wissenschaft",
+    ],
+    "Sports": [
+        "sports",
+        "football",
+        "rugby",
+        "tennis",
+        "athletic",
+        "sport",
+        "athlètes",
+        "fußball",
+    ],
+    "Culture": [
+        "arts",
+        "culture",
+        "cinema",
+        "literature",
+        "museum",
+        "cinéma",
+        "littérature",
+        "kunst",
+        "kultur",
+    ],
+    "Business": [
+        "business",
+        "entrepreneur",
+        "economics",
+        "finance",
+        "entreprise",
+        "management",
+        "unternehmen",
+        "wirtschaft",
+    ],
     "Comedy": ["comedy", "humor", "funny", "humour", "humoristique", "hilarante"],
     "Politics": ["politic", "policy", "government", "politique", "débat", "politisch"],
     "Health": ["health", "wellness", "nutrition", "exercise", "santé", "médecin", "gesundheit"],
@@ -56,7 +117,16 @@ TOPIC_DESCRIPTION_KEYWORDS: dict[str, list[str]] = {
     "Music": ["music", "jazz", "classical", "album", "musique", "musik"],
     "Travel": ["travel", "destination", "adventure", "voyage", "reisen"],
     "Crime": ["crime", "criminal", "investigation", "murder", "criminelle", "enquête", "kriminal"],
-    "Environment": ["environment", "ecology", "climate", "biodiversity", "écologie", "environnement", "ökologie", "umwelt"],
+    "Environment": [
+        "environment",
+        "ecology",
+        "climate",
+        "biodiversity",
+        "écologie",
+        "environnement",
+        "ökologie",
+        "umwelt",
+    ],
     "Philosophy": ["philosophy", "ethics", "freedom", "justice", "philosophie", "liberté"],
 }
 
@@ -119,9 +189,9 @@ def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
             expected_topics = set(qinfo["topics"])
 
             relevant = {
-                pid for pid, topic in program_topics.items()
-                if topic in expected_topics
-                and catalog_lang(catalog, pid) == lang
+                pid
+                for pid, topic in program_topics.items()
+                if topic in expected_topics and catalog_lang(catalog, pid) == lang
             }
 
             if not relevant:
@@ -134,15 +204,17 @@ def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
                 p = precision_at_k(response.programs, relevant, k)
                 r = recall_at_k(response.programs, relevant, k)
                 n = ndcg_at_k(response.programs, relevant, k)
-                results.append({
-                    "lang": lang,
-                    "query": query_text[:50],
-                    "k": k,
-                    "precision": p,
-                    "recall": r,
-                    "ndcg": n,
-                    "relevant_count": len(relevant),
-                })
+                results.append(
+                    {
+                        "lang": lang,
+                        "query": query_text[:50],
+                        "k": k,
+                        "precision": p,
+                        "recall": r,
+                        "ndcg": n,
+                        "relevant_count": len(relevant),
+                    }
+                )
 
     # Print summary table
     print(f"\n{'Lang':<5} {'k':<3} {'P@k':>6} {'R@k':>6} {'nDCG':>6}  Query")
