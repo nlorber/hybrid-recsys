@@ -95,22 +95,22 @@ cd hybrid-recsys
 make setup
 
 # 2. Generate a synthetic catalog and build indexes
-poetry run python scripts/generate_catalog.py
-poetry run hybrid-recsys index
+uv run python scripts/generate_catalog.py
+uv run hybrid-recsys index
 
 # 3. Run a demo query
-poetry run hybrid-recsys demo "true crime podcast" --lang en --size 3
+uv run hybrid-recsys demo "true crime podcast" --lang en --size 3
 ```
 
 <details>
 <summary>Manual install (without Make)</summary>
 
 ```bash
-poetry install
-poetry run python -m spacy download en_core_web_sm
-poetry run python -m spacy download fr_core_news_sm
-poetry run python -m spacy download de_core_news_sm
-poetry run python -m nltk.downloader stopwords
+uv sync
+uv run python -m spacy download en_core_web_sm
+uv run python -m spacy download fr_core_news_sm
+uv run python -m spacy download de_core_news_sm
+uv run python -m nltk.downloader stopwords
 ```
 </details>
 
@@ -121,7 +121,7 @@ poetry run python -m nltk.downloader stopwords
 Start the FastAPI server:
 
 ```bash
-poetry run hybrid-recsys serve
+uv run hybrid-recsys serve
 # Listening on http://0.0.0.0:8000
 ```
 
@@ -194,13 +194,13 @@ See [docs/DESIGN.md](docs/DESIGN.md) for:
 
 ```bash
 # All tests
-poetry run pytest
+uv run pytest
 
 # Unit tests only
-poetry run pytest tests/unit
+uv run pytest tests/unit
 
 # Integration tests only
-poetry run pytest tests/integration
+uv run pytest tests/integration
 ```
 
 ---
