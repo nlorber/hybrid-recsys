@@ -7,6 +7,12 @@ from pathlib import Path
 
 SEED = 42
 
+# Episode duration distribution (seconds)
+DURATION_MIN = 300  # 5 minutes
+DURATION_MAX = 7200  # 2 hours
+DURATION_MEAN = 1800  # 30 minutes
+DURATION_STD = 1200  # 20 minutes
+
 TOPICS = {
     "Technology": {
         "fr": [
@@ -306,7 +312,9 @@ def generate_catalog(seed: int = SEED) -> dict:
             for ep in range(1, num_episodes + 1):
                 media_id = f"med_{media_counter:05d}"
                 media_counter += 1
-                duration = max(300, min(7200, int(rng.gauss(1800, 1200))))
+                duration = max(
+                    DURATION_MIN, min(DURATION_MAX, int(rng.gauss(DURATION_MEAN, DURATION_STD)))
+                )
                 media.append(
                     {
                         "media_id": media_id,
