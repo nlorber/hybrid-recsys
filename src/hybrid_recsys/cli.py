@@ -83,11 +83,16 @@ def demo(
 
     # Generate catalog if not present
     if not settings.catalog_path.exists():
-        typer.echo("Catalog not found. Generating synthetic catalog...")
         from pathlib import Path as _Path
 
-        root = _Path(__file__).resolve().parents[2]
-        script = root / "scripts" / "generate_catalog.py"
+        script = _Path.cwd() / "scripts" / "generate_catalog.py"
+        if not script.exists():
+            typer.echo(
+                f"Catalog not found at {settings.catalog_path}. "
+                "Run 'uv run python scripts/generate_catalog.py' from the project root."
+            )
+            raise typer.Exit(1)
+        typer.echo("Catalog not found. Generating synthetic catalog...")
         import subprocess
 
         subprocess.run([sys.executable, str(script)], check=True)

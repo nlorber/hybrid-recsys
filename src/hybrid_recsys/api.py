@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
+from importlib.metadata import version
 from typing import TYPE_CHECKING
 
 from fastapi import Depends, FastAPI, HTTPException, Request
@@ -42,7 +43,7 @@ def get_pipeline(request: Request) -> RecommendationPipeline:
 app = FastAPI(
     title="hybrid-recsys",
     description="Multilingual hybrid recommendation engine",
-    version="0.1.0",
+    version=version("hybrid-recsys"),
     lifespan=lifespan,
 )
 
