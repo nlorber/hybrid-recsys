@@ -65,7 +65,7 @@ Benchmarked over 100 queries, single-threaded, no LLM re-ranking. Latency is dom
 
 ### Retrieval Quality
 
-The synthetic catalog covers 10 topics across 200 programs. Queries that match a catalog topic (e.g., "artificial intelligence") achieve precision@3 = 1.0; queries outside the catalog's topic coverage return no relevant results. This binary hit-or-miss pattern is a catalog coverage limitation, not an algorithm limitation — on a production catalog with broader topic diversity, dual-retrieval + RRF fusion yields substantially higher recall.
+The synthetic catalog covers 15 topics across 200 programs. Queries that match a catalog topic (e.g., "artificial intelligence") achieve precision@3 = 1.0; queries outside the catalog's topic coverage return no relevant results. This binary hit-or-miss pattern is a catalog coverage limitation, not an algorithm limitation — on a production catalog with broader topic diversity, dual-retrieval + RRF fusion yields substantially higher recall.
 
 Aggregate metrics across all queries (including out-of-coverage):
 
