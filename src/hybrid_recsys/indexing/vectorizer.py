@@ -91,5 +91,6 @@ class Vectorizer:
             tfidf_vectorizer=tfidf_vectorizer,
             embedding_dim=len(embedding_vectors[0]),
             tfidf_dim=len(tfidf_vector_list[0]),
+            ann_metric=self._settings.ann_metric,
         )
         self._store.save(lang, index, self._settings.index_dir)

@@ -33,6 +33,7 @@ def sample_index():
         tfidf_vectorizer=vectorizer,
         embedding_dim=dim,
         tfidf_dim=tfidf_dim,
+        ann_metric="angular",
     )
 
 
@@ -87,6 +88,12 @@ class TestIndexStoreRoundTrip:
         store = IndexStore()
         with pytest.raises(FileNotFoundError, match="No index found for language 'xx'"):
             store.load("xx", tmp_path)
+
+    def test_ann_metric_preserved(self, sample_index, tmp_path) -> None:
+        store = IndexStore()
+        store.save("en", sample_index, tmp_path)
+        loaded = store.load("en", tmp_path)
+        assert loaded.ann_metric == "angular"
 
     def test_multiple_languages_do_not_interfere(self, sample_index, tmp_path) -> None:
         store = IndexStore()

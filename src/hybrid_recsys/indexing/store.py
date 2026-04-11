@@ -9,6 +9,8 @@ from typing import Any
 from annoy import AnnoyIndex
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+from hybrid_recsys.retrieval.ann_search import AnnoyMetric
+
 
 @dataclass
 class LanguageIndex:
@@ -22,6 +24,7 @@ class LanguageIndex:
     tfidf_vectorizer: TfidfVectorizer
     embedding_dim: int
     tfidf_dim: int
+    ann_metric: AnnoyMetric
 
 
 class IndexStore:
@@ -50,6 +53,7 @@ class IndexStore:
             "media_data": index.media_data,
             "embedding_dim": index.embedding_dim,
             "tfidf_dim": index.tfidf_dim,
+            "ann_metric": index.ann_metric,
         }
         with open(lang_dir / "metadata.json", "w", encoding="utf-8") as f:
             json.dump(metadata, f, indent=2, ensure_ascii=False)
@@ -75,10 +79,12 @@ class IndexStore:
         with open(lang_dir / "metadata.json", encoding="utf-8") as f:
             metadata = json.load(f)
 
-        ann_embedding = AnnoyIndex(metadata["embedding_dim"], "angular")
+        ann_metric: AnnoyMetric = metadata.get("ann_metric", "angular")
+
+        ann_embedding = AnnoyIndex(metadata["embedding_dim"], ann_metric)
         ann_embedding.load(str(lang_dir / "ann_embedding.ann"))
 
-        ann_tfidf = AnnoyIndex(metadata["tfidf_dim"], "angular")
+        ann_tfidf = AnnoyIndex(metadata["tfidf_dim"], ann_metric)
         ann_tfidf.load(str(lang_dir / "ann_tfidf.ann"))
 
         with open(lang_dir / "tfidf_vectorizer.pkl", "rb") as f:
@@ -94,4 +100,5 @@ class IndexStore:
             tfidf_vectorizer=tfidf_vectorizer,
             embedding_dim=metadata["embedding_dim"],
             tfidf_dim=metadata["tfidf_dim"],
+            ann_metric=ann_metric,
         )

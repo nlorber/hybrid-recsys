@@ -54,6 +54,7 @@ def test_index_dir(tmp_path: Path):
         tfidf_vectorizer=vectorizer,
         embedding_dim=dim,
         tfidf_dim=tfidf_dim,
+        ann_metric="angular",
     )
 
     store = IndexStore()
