@@ -9,52 +9,14 @@ from typing import TYPE_CHECKING
 from fastapi import Depends, FastAPI, HTTPException, Request
 
 from hybrid_recsys.config import Settings
+from hybrid_recsys.factory import create_embedding_provider, create_llm_provider
 from hybrid_recsys.models import RecoRequest, RecoResponse
-from hybrid_recsys.providers.embeddings.sentence_tf import SentenceTransformerProvider
-from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
 
 if TYPE_CHECKING:
     from collections.abc import AsyncGenerator
 
-    from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
-    from hybrid_recsys.providers.llm.base import LLMProvider
-
 logger = logging.getLogger(__name__)
-
-
-def _create_pipeline(settings: Settings) -> RecommendationPipeline:
-    """Create the pipeline with the configured providers."""
-    embedder: EmbeddingProvider
-    if settings.embedding_provider == "sentence-transformers":
-        embedder = SentenceTransformerProvider(settings.embedding_model)
-    elif settings.embedding_provider == "openai":
-        from hybrid_recsys.providers.embeddings.openai import OpenAIEmbeddingProvider
-
-        embedder = OpenAIEmbeddingProvider(
-            api_key=settings.openai_api_key,
-            model=settings.embedding_model,
-            base_url=settings.openai_base_url,
-        )
-    else:
-        msg = f"Unknown embedding provider: {settings.embedding_provider}"
-        raise ValueError(msg)
-
-    llm: LLMProvider
-    if settings.llm_provider == "mock":
-        llm = MockLLMProvider()
-    elif settings.llm_provider == "openai":
-        from hybrid_recsys.providers.llm.openai import OpenAILLMProvider
-
-        llm = OpenAILLMProvider(
-            api_key=settings.openai_api_key,
-            base_url=settings.openai_base_url,
-        )
-    else:
-        msg = f"Unknown LLM provider: {settings.llm_provider}"
-        raise ValueError(msg)
-
-    return RecommendationPipeline(embedder, llm, settings)
 
 
 @asynccontextmanager
@@ -62,7 +24,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Initialize pipeline on startup."""
     settings = Settings()
     logger.info("Initializing recommendation pipeline")
-    app.state.pipeline = _create_pipeline(settings)
+    embedder = create_embedding_provider(settings)
+    llm = create_llm_provider(settings)
+    app.state.pipeline = RecommendationPipeline(embedder, llm, settings)
     yield
     del app.state.pipeline
 

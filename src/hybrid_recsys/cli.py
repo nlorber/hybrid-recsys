@@ -45,11 +45,9 @@ def index() -> None:
         typer.echo(f"Catalog not found at {catalog_path}. Run generate_catalog.py first.")
         raise typer.Exit(1)
 
+    from hybrid_recsys.factory import create_embedding_provider
     from hybrid_recsys.indexing.vectorizer import Vectorizer
     from hybrid_recsys.models import CatalogItem
-    from hybrid_recsys.providers.embeddings.sentence_tf import (
-        SentenceTransformerProvider,
-    )
     from hybrid_recsys.providers.nlp.spacy import SpacyNLP
 
     with open(catalog_path, encoding="utf-8") as f:
@@ -57,7 +55,7 @@ def index() -> None:
     catalog = [CatalogItem(**p) for p in data["programs"]]
     typer.echo(f"Loaded {len(catalog)} programs from {catalog_path}")
 
-    embedder = SentenceTransformerProvider(settings.embedding_model)
+    embedder = create_embedding_provider(settings)
     nlp = SpacyNLP()
     vectorizer = Vectorizer(embedder, nlp, settings)
     vectorizer.build(catalog)
@@ -100,15 +98,12 @@ def demo(
         typer.echo("Indexes not found. Building...")
         index()
 
+    from hybrid_recsys.factory import create_embedding_provider, create_llm_provider
     from hybrid_recsys.models import RecoRequest
-    from hybrid_recsys.providers.embeddings.sentence_tf import (
-        SentenceTransformerProvider,
-    )
-    from hybrid_recsys.providers.llm.mock import MockLLMProvider
     from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
 
-    embedder = SentenceTransformerProvider(settings.embedding_model)
-    llm = MockLLMProvider()
+    embedder = create_embedding_provider(settings)
+    llm = create_llm_provider(settings)
     pipeline = RecommendationPipeline(embedder, llm, settings)
 
     request = RecoRequest(query=query, lang=lang, size=size, duration=duration)
