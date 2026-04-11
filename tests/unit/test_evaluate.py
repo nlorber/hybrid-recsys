@@ -51,6 +51,12 @@ class TestNDCG:
         score_bottom = ndcg_at_k(["x", "y", "a"], {"a"}, k=3)
         assert score_top > score_bottom
 
+    def test_ndcg_penalises_missing_relevant_items(self) -> None:
+        # 5 relevant items exist but only 1 is in top-3 — nDCG should be well below 1.0
+        score = ndcg_at_k(["a", "x", "y"], {"a", "b", "c", "d", "e"}, k=3)
+        # ideal has 3 relevant items at top; actual has only 1
+        assert score < 0.5
+
     def test_dcg_formula(self) -> None:
         # Manual DCG: rel=1 at pos 1, rel=0 at pos 2, rel=1 at pos 3
         # DCG = 1/log2(2) + 0/log2(3) + 1/log2(4) = 1.0 + 0 + 0.5 = 1.5

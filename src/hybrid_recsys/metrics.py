@@ -32,8 +32,8 @@ def dcg_at_k(ranked: list[str], relevant: set[str], k: int) -> float:
 
 def ndcg_at_k(ranked: list[str], relevant: set[str], k: int) -> float:
     """Normalized DCG at k. Returns 0 if no relevant items exist."""
-    ideal = sorted(ranked[:k], key=lambda x: x in relevant, reverse=True)
-    idcg = dcg_at_k(ideal, relevant, k)
-    if idcg == 0:
+    n_relevant_in_topk = min(k, len(relevant))
+    if n_relevant_in_topk == 0:
         return 0.0
+    idcg = sum(1.0 / math.log2(i + 1) for i in range(1, n_relevant_in_topk + 1))
     return dcg_at_k(ranked, relevant, k) / idcg
