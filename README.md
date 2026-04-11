@@ -75,6 +75,14 @@ Aggregate metrics across all queries (including out-of-coverage):
 | Recall | 0.023 | 0.023 |
 | nDCG | 0.133 | 0.133 |
 
+## Why This Design
+
+- **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The combination reliably outperforms either alone._
+- **LLM re-ranking with automatic fallback** — optional Claude/GPT re-ranker; falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
+- **Annoy over FAISS** — single static file, no server process, mmap-friendly. _Scales to ~1M items with minimal operational overhead. FAISS is better at 10M+ but requires GPU or server process._
+- **Per-language indexes** — separate Annoy + TF-IDF indexes per language. _Multilingual embedding models underperform monolingual ones on non-English content; per-language indexing avoids cross-lingual noise in retrieval._
+- **Duration-aware scoring with asymmetric penalty** — penalizes results longer than requested more than shorter ones. _A product requirement: prioritize shorter-than-requested content over longer._
+
 ---
 
 ## Quick Start
@@ -137,21 +145,6 @@ Example response:
 ```
 
 Interactive API docs: <http://localhost:8000/docs>
-
----
-
-## Key Design Decisions
-
-| Decision | Rationale |
-|---|---|
-| **Dual retrieval** (embedding + TF-IDF) | Embeddings capture semantics; TF-IDF captures exact keywords. Combining both handles a wider range of queries. |
-| **Reciprocal Rank Fusion** | No labeled training data required; robust to score-scale differences between embedding and TF-IDF results. |
-| **LLM re-ranking with fallback** | LLMs add semantic understanding but are unreliable; falling back to RRF keeps the pipeline stable. |
-| **Annoy for ANN search** | Zero extra dependencies, native cosine similarity (angular metric), sufficient for catalogs up to ~1 M items. |
-| **Per-language indexes** | Keeps TF-IDF vocabularies clean and query-time routing trivial. |
-| **Configurable duration penalty** | Asymmetric: media shorter than requested incurs only natural decay; media longer than requested gets an additional penalty. |
-
-See [docs/DESIGN.md](docs/DESIGN.md) for the full rationale and formulas.
 
 ---
 
