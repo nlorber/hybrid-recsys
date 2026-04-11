@@ -39,6 +39,13 @@ TOPIC_QUERIES: dict[str, list[dict[str, object]]] = {
         {"query": "football rugby sport athletes", "topics": ["Sports"]},
         {"query": "crime enquete meurtre judiciaire", "topics": ["Crime"]},
     ],
+    "de": [
+        {"query": "künstliche Intelligenz digitale Transformation", "topics": ["Technology"]},
+        {"query": "Weltgeschichte antike Imperien Revolutionen", "topics": ["History"]},
+        {"query": "Physik Biologie wissenschaftliche Entdeckungen", "topics": ["Science"]},
+        {"query": "Fußball Tennis Profisport", "topics": ["Sports"]},
+        {"query": "Kriminalfälle Ermittlungen Zeugenaussagen", "topics": ["Crime"]},
+    ],
 }
 
 TOPIC_DESCRIPTION_KEYWORDS: dict[str, list[str]] = {
@@ -144,12 +151,9 @@ def infer_topic(description: str) -> str | None:
     return best_topic if best_score > 0 else None
 
 
-def catalog_lang(catalog: dict, program_id: str) -> str | None:
-    """Look up a program's language in the catalog."""
-    for prog in catalog["programs"]:
-        if prog["program_id"] == program_id:
-            return prog["lang"]
-    return None
+def build_program_lang_map(catalog: dict) -> dict[str, str]:
+    """Build a program_id → language lookup from the catalog."""
+    return {prog["program_id"]: prog["lang"] for prog in catalog["programs"]}
 
 
 def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
@@ -169,8 +173,9 @@ def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
     with open(catalog_path) as f:
         catalog = json.load(f)
 
-    # Build topic labels for each program
+    # Build topic labels and language lookup for each program
     program_topics: dict[str, str] = {}
+    program_langs = build_program_lang_map(catalog)
     for prog in catalog["programs"]:
         topic = infer_topic(prog["description"])
         if topic:
@@ -191,7 +196,7 @@ def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
             relevant = {
                 pid
                 for pid, topic in program_topics.items()
-                if topic in expected_topics and catalog_lang(catalog, pid) == lang
+                if topic in expected_topics and program_langs.get(pid) == lang
             }
 
             if not relevant:
