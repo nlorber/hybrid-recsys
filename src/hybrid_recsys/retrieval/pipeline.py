@@ -10,7 +10,7 @@ from hybrid_recsys.models import RecoRequest, RecoResponse
 from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.llm.base import LLMProvider
 from hybrid_recsys.providers.nlp.spacy import SpacyNLP
-from hybrid_recsys.retrieval.ann_search import query_annoy_index
+from hybrid_recsys.retrieval.ann_search import query_ann_index
 from hybrid_recsys.retrieval.fusion import reciprocal_rank_fusion
 from hybrid_recsys.retrieval.reranker import rerank_programs
 from hybrid_recsys.retrieval.scorer import duration_score
@@ -74,8 +74,8 @@ class RecommendationPipeline:
 
         # Step 2: ANN search both indexes
         k = min(self._settings.ann_query_k, len(index.program_ids))
-        emb_indices = query_annoy_index(index.ann_embedding, query_embedding, k)
-        tfidf_indices = query_annoy_index(index.ann_tfidf, query_tfidf, k)
+        emb_indices = query_ann_index(index.ann_embedding, query_embedding, k)
+        tfidf_indices = query_ann_index(index.ann_tfidf, query_tfidf, k)
 
         emb_programs = [index.program_ids[i] for i in emb_indices]
         tfidf_programs = [index.program_ids[i] for i in tfidf_indices]

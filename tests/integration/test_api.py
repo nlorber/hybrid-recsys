@@ -10,7 +10,7 @@ from hybrid_recsys.api import app
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
-from hybrid_recsys.retrieval.ann_search import build_annoy_index
+from hybrid_recsys.retrieval.ann_search import build_ann_index
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
 from tests.conftest import FixedEmbedder
 
@@ -24,8 +24,8 @@ def test_index_dir(tmp_path: Path):
     emb_vecs = [[0.1 * (i + 1)] * dim for i in range(3)]
     tfidf_vecs = [[0.1 * (i + 1)] * tfidf_dim for i in range(3)]
 
-    ann_emb = build_annoy_index(emb_vecs)
-    ann_tfidf = build_annoy_index(tfidf_vecs)
+    ann_emb = build_ann_index(emb_vecs)
+    ann_tfidf = build_ann_index(tfidf_vecs)
 
     # Three single-word documents → vocabulary of exactly 3 terms → tfidf_dim=3
     vectorizer = TfidfVectorizer()
@@ -54,7 +54,7 @@ def test_index_dir(tmp_path: Path):
         tfidf_vectorizer=vectorizer,
         embedding_dim=dim,
         tfidf_dim=tfidf_dim,
-        ann_metric="angular",
+        ann_metric="cosine",
     )
 
     store = IndexStore()

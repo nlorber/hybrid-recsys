@@ -4,7 +4,7 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from hybrid_recsys.retrieval.ann_search import AnnoyMetric
+from hybrid_recsys.retrieval.ann_search import IndexMetric
 
 
 class Settings(BaseSettings):
@@ -35,9 +35,10 @@ class Settings(BaseSettings):
     rrf_media_weights: list[float] = [3.0, 2.0, 3.0]
     rrf_media_k: int = 8
 
-    # ANN parameters
-    ann_metric: AnnoyMetric = "angular"
-    ann_n_trees: int = 10
+    # ANN parameters (Voyager HNSW)
+    ann_metric: IndexMetric = "cosine"
+    ann_m: int = 16
+    ann_ef_construction: int = 200
     ann_query_k: int = 20
 
     # Paths

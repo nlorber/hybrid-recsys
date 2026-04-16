@@ -1,48 +1,58 @@
-"""Annoy-based Approximate Nearest Neighbor search."""
+"""HNSW-based Approximate Nearest Neighbor search via Voyager."""
 
 from typing import Literal
 
-from annoy import AnnoyIndex
+from voyager import Index, Space
 
-AnnoyMetric = Literal["angular", "euclidean", "manhattan", "hamming", "dot"]
+IndexMetric = Literal["cosine", "euclidean", "dot"]
+
+_SPACE_BY_METRIC: dict[IndexMetric, Space] = {
+    "cosine": Space.Cosine,
+    "euclidean": Space.Euclidean,
+    "dot": Space.InnerProduct,
+}
 
 
-def build_annoy_index(
+def build_ann_index(
     vectors: list[list[float]],
-    metric: AnnoyMetric = "angular",
-    n_trees: int = 10,
-) -> AnnoyIndex:
-    """Build an Annoy index from a list of vectors.
+    metric: IndexMetric = "cosine",
+    m: int = 16,
+    ef_construction: int = 200,
+) -> Index:
+    """Build a Voyager HNSW index from a list of vectors.
 
     Args:
         vectors: List of vectors to index. All must have same dimensionality.
-        metric: Distance metric. 'angular' for cosine similarity.
-        n_trees: Number of trees. More trees = better precision, slower build.
+        metric: Distance metric. 'cosine' for normalized similarity.
+        m: Graph degree parameter. Higher = better recall, more memory.
+        ef_construction: Build-time candidate list size. Higher = better recall,
+            slower build.
 
     Returns:
-        Built AnnoyIndex ready for querying.
+        Built Voyager Index ready for querying.
     """
     dim = len(vectors[0])
-    index = AnnoyIndex(dim, metric)
-    for i, vec in enumerate(vectors):
-        index.add_item(i, vec)
-    index.build(n_trees)
+    index = Index(
+        _SPACE_BY_METRIC[metric], num_dimensions=dim, M=m, ef_construction=ef_construction
+    )
+    index.add_items(vectors)
     return index
 
 
-def query_annoy_index(
-    index: AnnoyIndex,
+def query_ann_index(
+    index: Index,
     query_vector: list[float],
     k: int,
 ) -> list[int]:
-    """Query an Annoy index for nearest neighbors.
+    """Query a Voyager index for nearest neighbors.
 
     Args:
-        index: Built AnnoyIndex.
+        index: Built Voyager Index.
         query_vector: Query vector (same dimension as indexed vectors).
         k: Number of neighbors to return.
 
     Returns:
         List of indices of nearest neighbors, closest first.
     """
-    return index.get_nns_by_vector(query_vector, k, include_distances=False)
+    neighbors, _ = index.query(query_vector, k=k)
+    return [int(i) for i in neighbors]

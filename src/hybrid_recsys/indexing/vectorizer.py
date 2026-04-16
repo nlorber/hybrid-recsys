@@ -9,7 +9,7 @@ from hybrid_recsys.indexing.tfidf import TfidfPipeline
 from hybrid_recsys.models import CatalogItem
 from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.nlp.spacy import SpacyNLP
-from hybrid_recsys.retrieval.ann_search import build_annoy_index
+from hybrid_recsys.retrieval.ann_search import build_ann_index
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 class Vectorizer:
     """Builds per-language indexes from a catalog.
 
-    For each language: generates embeddings, fits TF-IDF, builds Annoy indexes,
-    and saves all artifacts to disk.
+    For each language: generates embeddings, fits TF-IDF, builds Voyager HNSW
+    indexes, and saves all artifacts to disk.
     """
 
     def __init__(
@@ -63,16 +63,18 @@ class Vectorizer:
         )
         tfidf_vector_list = [tfidf_vectors[pid] for pid in program_ids]
 
-        # Build Annoy indexes
-        ann_embedding = build_annoy_index(
+        # Build HNSW indexes
+        ann_embedding = build_ann_index(
             embedding_vectors,
             metric=self._settings.ann_metric,
-            n_trees=self._settings.ann_n_trees,
+            m=self._settings.ann_m,
+            ef_construction=self._settings.ann_ef_construction,
         )
-        ann_tfidf = build_annoy_index(
+        ann_tfidf = build_ann_index(
             tfidf_vector_list,
             metric=self._settings.ann_metric,
-            n_trees=self._settings.ann_n_trees,
+            m=self._settings.ann_m,
+            ef_construction=self._settings.ann_ef_construction,
         )
 
         # Prepare metadata

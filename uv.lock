@@ -21,12 +21,6 @@ wheels = [
 ]
 
 [[package]]
-name = "annoy"
-version = "1.17.3"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/07/38/e321b0e05d8cc068a594279fb7c097efb1df66231c295d482d7ad51b6473/annoy-1.17.3.tar.gz", hash = "sha256:9cbfebefe0a5f843eba29c6be4c84d601f4f41ad4ded0486f1b88c3b07739c15", size = 647460, upload-time = "2023-06-14T16:37:34.152Z" }
-
-[[package]]
 name = "anyio"
 version = "4.13.0"
 source = { registry = "https://pypi.org/simple" }
@@ -645,7 +639,6 @@ name = "hybrid-recsys"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "annoy" },
     { name = "fastapi" },
     { name = "nltk" },
     { name = "pydantic" },
@@ -655,6 +648,7 @@ dependencies = [
     { name = "spacy" },
     { name = "typer" },
     { name = "uvicorn", extra = ["standard"] },
+    { name = "voyager" },
 ]
 
 [package.optional-dependencies]
@@ -672,7 +666,6 @@ openai = [
 
 [package.metadata]
 requires-dist = [
-    { name = "annoy", specifier = ">=1.17,<2" },
     { name = "fastapi", specifier = ">=0.115,<1" },
     { name = "httpx", marker = "extra == 'dev'", specifier = ">=0.28,<1" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.20,<2" },
@@ -689,6 +682,7 @@ requires-dist = [
     { name = "spacy", specifier = ">=3.8,<4" },
     { name = "typer", specifier = ">=0.15,<1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.34,<1" },
+    { name = "voyager", specifier = ">=2.1,<3" },
 ]
 provides-extras = ["dev", "openai"]
 
@@ -2695,6 +2689,28 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/aa/92/58199fe10049f9703c2666e809c4f686c54ef0a68b0f6afccf518c0b1eb9/virtualenv-21.2.0.tar.gz", hash = "sha256:1720dc3a62ef5b443092e3f499228599045d7fea4c79199770499df8becf9098", size = 5840618, upload-time = "2026-03-09T17:24:38.013Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c6/59/7d02447a55b2e55755011a647479041bc92a82e143f96a8195cb33bd0a1c/virtualenv-21.2.0-py3-none-any.whl", hash = "sha256:1bd755b504931164a5a496d217c014d098426cddc79363ad66ac78125f9d908f", size = 5825084, upload-time = "2026-03-09T17:24:35.378Z" },
+]
+
+[[package]]
+name = "voyager"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/38/b5/47f132b3e7ab2551e652d3d646ff65277cf09a5781450fb6288623d5173b/voyager-2.1.0-cp311-cp311-macosx_10_13_universal2.whl", hash = "sha256:6616d2d26e3208ffe5ce869ec8ece055aec43563c0f88706026aa90645f3073b", size = 697419, upload-time = "2024-12-13T19:50:44.64Z" },
+    { url = "https://files.pythonhosted.org/packages/c7/4f/d8a35b17b522430ff75bfd33bca0218b8e045b21f47feaa2610a3bb43089/voyager-2.1.0-cp311-cp311-macosx_10_13_x86_64.whl", hash = "sha256:c120b9d36e1927c1dca75a763500fd180791dc9991476b176b1cd71409824a13", size = 359341, upload-time = "2024-12-13T19:50:45.902Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/cf/34c763a558b70c5a5a24360e5068f088b535bcb4dc3b9f9eecb335d9aa8f/voyager-2.1.0-cp311-cp311-macosx_11_0_arm64.whl", hash = "sha256:60b73c66783f10da89edd6f12008a176dc2e039449f5dd6b936e18480b6f216a", size = 338610, upload-time = "2024-12-13T19:50:48.116Z" },
+    { url = "https://files.pythonhosted.org/packages/1d/29/5fad84c1cca95c76060e80ed650c448a6980b2853a84c9cbc9ad87b7875f/voyager-2.1.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:9c08d422fd0bf041091d91e0d72225cf4c4785feddb0e56fa342ae9b79fceba1", size = 4361096, upload-time = "2024-12-13T19:50:50.594Z" },
+    { url = "https://files.pythonhosted.org/packages/ad/74/e54136accabc3d68aa2183b87ece7d228c84ded3541b6fdad3dd43bf31bd/voyager-2.1.0-cp311-cp311-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3431dcabdd151aec5ac34bfc6f7a24143ee398d1c2828d2891446583b1edad8f", size = 4429536, upload-time = "2024-12-13T19:50:53.094Z" },
+    { url = "https://files.pythonhosted.org/packages/6b/7a/7a7aca1b2cd103585a5360ba032bdd17810f8a2e0224a07c024140c70434/voyager-2.1.0-cp311-cp311-win_amd64.whl", hash = "sha256:95f0aafb38cdaa43798c6c78626d7b9300827ac17f28ab3994ce73d1ec1124d0", size = 206048, upload-time = "2024-12-13T19:50:54.364Z" },
+    { url = "https://files.pythonhosted.org/packages/07/c1/57d37108b0cc892314286c221ed9ffe0540768e0f1c5ac583ea6e14d8d9a/voyager-2.1.0-cp312-cp312-macosx_10_13_universal2.whl", hash = "sha256:18ef1903fa85a2ff580f1d5a70f62c1eee710d39487eeeb192f34555cb50be6e", size = 702332, upload-time = "2024-12-13T19:50:55.492Z" },
+    { url = "https://files.pythonhosted.org/packages/3f/94/73002811f8c542d138952d3485bab94b2e280cf4ddf7fd901e1ac6884254/voyager-2.1.0-cp312-cp312-macosx_10_13_x86_64.whl", hash = "sha256:dc23adf051720560cf9f5a958df155edaba6f7b2c3746a1686f92bbc9b846d15", size = 362635, upload-time = "2024-12-13T19:50:57.773Z" },
+    { url = "https://files.pythonhosted.org/packages/ff/3b/770117e65710f22fdbc575072c43824f1526bdb1d000f5089bef5bd4a650/voyager-2.1.0-cp312-cp312-macosx_11_0_arm64.whl", hash = "sha256:4b75034984411ed3120b919f4d7f16ed0406bb5863924a28525b48ac5b4010fa", size = 339880, upload-time = "2024-12-13T19:51:00.123Z" },
+    { url = "https://files.pythonhosted.org/packages/91/87/f3ed4ebeeff371b0b759c277025379dbcb5dbf00083df6c03f5c9727b6cd/voyager-2.1.0-cp312-cp312-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:cddf5359d8a88bd5fc12fc71c0e7fd332e4da1d96dac8ae445b0138871cd28b2", size = 4360919, upload-time = "2024-12-13T19:51:02.516Z" },
+    { url = "https://files.pythonhosted.org/packages/b7/13/a772a9a2d4cc427f6b4ae2aca65e50ec99f7bb6037c346cc22a07bc4a326/voyager-2.1.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9415b9c923bac493d5c68d55ae55c4289153c23f9f478422934de61acbaf4c01", size = 4444514, upload-time = "2024-12-13T19:51:04.235Z" },
+    { url = "https://files.pythonhosted.org/packages/c5/76/02b66dc8c1e9d373327ef15ff3ccdea5be0b104d43d65c8bf52848058331/voyager-2.1.0-cp312-cp312-win_amd64.whl", hash = "sha256:f8264f438f1df40d11e1f18a069980972a569f5a2f3c0a0d2abef9d4b4078d5c", size = 207456, upload-time = "2024-12-13T19:51:05.582Z" },
 ]
 
 [[package]]

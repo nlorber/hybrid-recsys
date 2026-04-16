@@ -18,7 +18,7 @@ flowchart TD
     Q[Query] --> EMB[Dense Embedding]
     Q --> TFIDF[TF-IDF Vectorise]
 
-    EMB --> ANN[Annoy ANN Search\nper-language indexes]
+    EMB --> ANN[Voyager HNSW ANN Search\nper-language indexes]
     TFIDF --> ANN
 
     ANN --> RRF1[RRF Fusion\nprograms]
@@ -39,7 +39,7 @@ flowchart TD
 
 1. The query is embedded (dense vector) and TF-IDF vectorised (sparse) in
    parallel.
-2. Both vectors are searched against per-language Annoy indexes, producing two
+2. Both vectors are searched against per-language Voyager HNSW indexes, producing two
    ranked lists of programs.
 3. The lists are merged via Reciprocal Rank Fusion.
 4. An optional LLM re-ranks the fused list (falls back to RRF on failure).
@@ -51,36 +51,43 @@ flowchart TD
 
 ## Results
 
-Measured on the 200-program synthetic catalog (667 media items across `en`, `fr`, `de`).
+Measured on the 200-program synthetic catalog (1075 media items across `en`, `fr`, `de`).
 
 ### Latency
 
 | Metric | Value |
 |--------|-------|
-| p50    | 9.7 ms |
-| p95    | 11.7 ms |
-| Max    | 43.2 ms |
+| p50    | 10.5 ms |
+| p95    | 15.8 ms |
+| Max    | 35.3 ms |
 
-Benchmarked over 100 queries, single-threaded, no LLM re-ranking. Latency is dominated by Annoy ANN search and feature extraction.
+Benchmarked over 200 queries, single-threaded, no LLM re-ranking, on macOS arm64 with `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Latency is dominated by query embedding and HNSW ANN search.
 
 ### Retrieval Quality
 
-The synthetic catalog covers 15 topics across 200 programs. Queries that match a catalog topic (e.g., "artificial intelligence") achieve precision@3 = 1.0; queries outside the catalog's topic coverage return no relevant results. This binary hit-or-miss pattern is a catalog coverage limitation, not an algorithm limitation — on a production catalog with broader topic diversity, dual-retrieval + RRF fusion yields substantially higher recall.
+Evaluated on 20 topic-based queries across `en`, `fr`, `de` (5 trilingual topics +
+5 English-only topics), with relevance judged by whether a returned program's
+topic matches the query topic.
 
-Aggregate metrics across all queries (including out-of-coverage):
+| Metric    | @3    | @5    |
+|-----------|-------|-------|
+| Precision | 0.800 | 0.680 |
+| Recall    | 0.655 | 0.847 |
+| nDCG      | 0.932 | 0.940 |
 
-| Metric | @3 | @5 |
-|--------|----|----|
-| Precision | 0.133 | 0.133 |
-| Recall | 0.023 | 0.023 |
-| nDCG | 0.133 | 0.133 |
+nDCG near `1.0` indicates that relevant programs consistently rank at the top of
+the returned list. Precision drops from `@3` to `@5` as extra slots fill with
+off-topic items once the topic's relevant pool is exhausted; recall rises
+correspondingly.
+
+---
 
 ## Why This Design
 
 - **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The combination reliably outperforms either alone._
 - **LLM re-ranking with automatic fallback** — optional Claude/GPT re-ranker; falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
-- **Annoy over FAISS** — single static file, no server process, mmap-friendly. _Scales to ~1M items with minimal operational overhead. FAISS is better at 10M+ but requires GPU or server process._
-- **Per-language indexes** — separate Annoy + TF-IDF indexes per language. _Multilingual embedding models underperform monolingual ones on non-English content; per-language indexing avoids cross-lingual noise in retrieval._
+- **Voyager (HNSW) over FAISS** — single static file, no server process, pip-installable wheel. _Scales to ~10M items with minimal operational overhead. FAISS becomes relevant at 100M+ or when GPU acceleration is needed._
+- **Per-language indexes** — separate HNSW + TF-IDF indexes per language. _Multilingual embedding models underperform monolingual ones on non-English content; per-language indexing avoids cross-lingual noise in retrieval._
 - **Duration-aware scoring with asymmetric penalty** — penalizes results longer than requested more than shorter ones. _A product requirement: prioritize shorter-than-requested content over longer._
 
 ---
@@ -171,7 +178,7 @@ See [docs/DESIGN.md](docs/DESIGN.md) for:
 
 - Full RRF formula with parameter explanation
 - Duration scoring formula and asymmetric penalty rationale
-- Annoy vs. FAISS / ScaNN trade-off analysis
+- Voyager (HNSW) vs. FAISS / ScaNN trade-off analysis
 - Indexing strategy and provider abstraction design
 
 ---
@@ -191,25 +198,13 @@ uv run pytest tests/integration
 
 ---
 
-## Known Issues
-
-### Annoy 1.17.3 on macOS arm64 + Python 3.12
-
-`get_nns_by_vector` returns only 1 result regardless of the `n` argument. This is
-a known upstream bug in Annoy 1.17.3 on macOS arm64 combined with Python 3.12.
-
-**Workaround:** Use Python 3.11 on macOS, or run on Linux where the issue does not
-occur. The project works correctly on Linux / CI.
-
----
-
 ## Tech Stack
 
 | Layer | Library |
 |---|---|
 | Embeddings | sentence-transformers / OpenAI |
 | Sparse retrieval | scikit-learn TF-IDF |
-| ANN index | Annoy |
+| ANN index | Voyager (HNSW) |
 | NLP tokenisation | spaCy |
 | Re-ranking | OpenAI (optional) / Mock |
 | API server | FastAPI + Uvicorn |

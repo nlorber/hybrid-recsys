@@ -4,7 +4,7 @@ import pytest
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
-from hybrid_recsys.retrieval.ann_search import build_annoy_index
+from hybrid_recsys.retrieval.ann_search import build_ann_index
 
 
 @pytest.fixture
@@ -15,8 +15,8 @@ def sample_index():
     emb_vecs = [[0.1 * (i + 1)] * dim for i in range(3)]
     tfidf_vecs = [[0.3, 0.6, 0.0], [0.0, 0.5, 0.5], [0.7, 0.1, 0.2]]
 
-    ann_emb = build_annoy_index(emb_vecs)
-    ann_tfidf = build_annoy_index(tfidf_vecs)
+    ann_emb = build_ann_index(emb_vecs)
+    ann_tfidf = build_ann_index(tfidf_vecs)
 
     vectorizer = TfidfVectorizer()
     vectorizer.fit(["alpha beta", "beta gamma", "alpha gamma"])
@@ -33,7 +33,7 @@ def sample_index():
         tfidf_vectorizer=vectorizer,
         embedding_dim=dim,
         tfidf_dim=tfidf_dim,
-        ann_metric="angular",
+        ann_metric="cosine",
     )
 
 
@@ -74,8 +74,8 @@ class TestIndexStoreRoundTrip:
         store = IndexStore()
         store.save("en", sample_index, tmp_path)
         loaded = store.load("en", tmp_path)
-        results = loaded.ann_embedding.get_nns_by_vector([0.1, 0.1, 0.1, 0.1], 2)
-        assert len(results) > 0
+        neighbors, _ = loaded.ann_embedding.query([0.1, 0.1, 0.1, 0.1], k=2)
+        assert len(neighbors) > 0
 
     def test_vectorizer_usable_after_load(self, sample_index, tmp_path) -> None:
         store = IndexStore()
@@ -93,7 +93,7 @@ class TestIndexStoreRoundTrip:
         store = IndexStore()
         store.save("en", sample_index, tmp_path)
         loaded = store.load("en", tmp_path)
-        assert loaded.ann_metric == "angular"
+        assert loaded.ann_metric == "cosine"
 
     def test_multiple_languages_do_not_interfere(self, sample_index, tmp_path) -> None:
         store = IndexStore()

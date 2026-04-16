@@ -10,7 +10,7 @@ from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
 from hybrid_recsys.models import RecoRequest
 from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
-from hybrid_recsys.retrieval.ann_search import build_annoy_index
+from hybrid_recsys.retrieval.ann_search import build_ann_index
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
 
 
@@ -59,8 +59,8 @@ def pipeline_env(tmp_path: Path):
     tfidf_vectors = [matrix[i].toarray().flatten().tolist() for i in range(len(desc_list))]  # noqa: E501
     tfidf_dim = len(tfidf_vectors[0])
 
-    ann_emb = build_annoy_index(emb_vectors, metric="angular", n_trees=10)
-    ann_tfidf = build_annoy_index(tfidf_vectors, metric="angular", n_trees=10)
+    ann_emb = build_ann_index(emb_vectors, metric="cosine")
+    ann_tfidf = build_ann_index(tfidf_vectors, metric="cosine")
 
     media_data = {
         "p1": [
@@ -82,7 +82,7 @@ def pipeline_env(tmp_path: Path):
         tfidf_vectorizer=vectorizer,
         embedding_dim=dim,
         tfidf_dim=tfidf_dim,
-        ann_metric="angular",
+        ann_metric="cosine",
     )
 
     store = IndexStore()

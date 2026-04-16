@@ -9,7 +9,7 @@ shell before starting the server / running the CLI.
 ## Embedding Providers
 
 Embedding providers convert text into dense vectors for ANN search. You must
-re-run `hybrid-recsys index` whenever you switch providers, because the Annoy
+re-run `hybrid-recsys index` whenever you switch providers, because the HNSW
 indexes are built from the embeddings produced by the active provider.
 
 ### sentence-transformers (default)
@@ -95,5 +95,7 @@ so a single base URL covers both providers when using Azure OpenAI.
 | `RECSYS_DURATION_PENALTY`  | `-1.0`                   | Score penalty for media longer than requested|
 | `RECSYS_RRF_PROGRAM_K`     | `5`                      | RRF k parameter for program fusion           |
 | `RECSYS_RRF_MEDIA_K`       | `8`                      | RRF k parameter for media fusion             |
-| `RECSYS_ANN_N_TREES`       | `10`                     | Number of trees in Annoy indexes             |
+| `RECSYS_ANN_METRIC`        | `cosine`                 | Distance metric (`cosine`, `euclidean`, `dot`) |
+| `RECSYS_ANN_M`             | `16`                     | HNSW graph degree (higher = better recall, more memory) |
+| `RECSYS_ANN_EF_CONSTRUCTION`| `200`                   | HNSW build-time candidate list size           |
 | `RECSYS_ANN_QUERY_K`       | `20`                     | Candidates retrieved per ANN query           |

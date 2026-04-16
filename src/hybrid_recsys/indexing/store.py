@@ -6,10 +6,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from annoy import AnnoyIndex
 from sklearn.feature_extraction.text import TfidfVectorizer
+from voyager import Index
 
-from hybrid_recsys.retrieval.ann_search import AnnoyMetric
+from hybrid_recsys.retrieval.ann_search import IndexMetric
 
 
 @dataclass
@@ -19,12 +19,12 @@ class LanguageIndex:
     program_ids: list[str]
     program_descriptions: dict[str, str]
     media_data: dict[str, list[dict[str, Any]]]
-    ann_embedding: AnnoyIndex
-    ann_tfidf: AnnoyIndex
+    ann_embedding: Index
+    ann_tfidf: Index
     tfidf_vectorizer: TfidfVectorizer
     embedding_dim: int
     tfidf_dim: int
-    ann_metric: AnnoyMetric
+    ann_metric: IndexMetric
 
 
 class IndexStore:
@@ -41,8 +41,8 @@ class IndexStore:
         lang_dir = base_dir / lang
         lang_dir.mkdir(parents=True, exist_ok=True)
 
-        index.ann_embedding.save(str(lang_dir / "ann_embedding.ann"))
-        index.ann_tfidf.save(str(lang_dir / "ann_tfidf.ann"))
+        index.ann_embedding.save(str(lang_dir / "ann_embedding.voy"))
+        index.ann_tfidf.save(str(lang_dir / "ann_tfidf.voy"))
 
         with open(lang_dir / "tfidf_vectorizer.pkl", "wb") as f:
             pickle.dump(index.tfidf_vectorizer, f)
@@ -79,13 +79,10 @@ class IndexStore:
         with open(lang_dir / "metadata.json", encoding="utf-8") as f:
             metadata = json.load(f)
 
-        ann_metric: AnnoyMetric = metadata.get("ann_metric", "angular")
+        ann_metric: IndexMetric = metadata.get("ann_metric", "cosine")
 
-        ann_embedding = AnnoyIndex(metadata["embedding_dim"], ann_metric)
-        ann_embedding.load(str(lang_dir / "ann_embedding.ann"))
-
-        ann_tfidf = AnnoyIndex(metadata["tfidf_dim"], ann_metric)
-        ann_tfidf.load(str(lang_dir / "ann_tfidf.ann"))
+        ann_embedding = Index.load(str(lang_dir / "ann_embedding.voy"))
+        ann_tfidf = Index.load(str(lang_dir / "ann_tfidf.voy"))
 
         with open(lang_dir / "tfidf_vectorizer.pkl", "rb") as f:
             # Safe: only loading self-generated index metadata from trusted local files
