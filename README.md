@@ -85,7 +85,7 @@ correspondingly.
 ## Why This Design
 
 - **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The combination reliably outperforms either alone._
-- **LLM re-ranking with automatic fallback** — optional Claude/GPT re-ranker; falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
+- **LLM re-ranking with automatic fallback** — optional OpenAI (GPT) re-ranker, pluggable via the `LLMProvider` ABC; falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
 - **Voyager (HNSW) over FAISS** — single static file, no server process, pip-installable wheel. _Scales to ~10M items with minimal operational overhead. FAISS becomes relevant at 100M+ or when GPU acceleration is needed._
 - **Per-language indexes** — separate HNSW + TF-IDF indexes per language. _Multilingual embedding models underperform monolingual ones on non-English content; per-language indexing avoids cross-lingual noise in retrieval._
 - **Duration-aware scoring with asymmetric penalty** — penalizes results longer than requested more than shorter ones. _A product requirement: prioritize shorter-than-requested content over longer._
