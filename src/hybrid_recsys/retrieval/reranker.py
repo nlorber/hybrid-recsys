@@ -129,6 +129,17 @@ def rerank_programs(
         logger.exception("LLM reranking failed, falling back to RRF")
         return rrf_ranking[:size]
 
+    # Drop IDs the LLM may have hallucinated outside the candidate set
+    candidate_set = set(rrf_ranking)
+    hallucinated = [pid for pid in result if pid not in candidate_set]
+    if hallucinated:
+        logger.warning(
+            "LLM returned %d ID(s) not in candidates: %r",
+            len(hallucinated),
+            hallucinated[:5],
+        )
+    result = [pid for pid in result if pid in candidate_set]
+
     # Pad if LLM underselected
     if len(result) < size:
         logger.warning("LLM returned %d < %d, padding from RRF", len(result), size)

@@ -118,6 +118,22 @@ class UnderSelectingLLMProvider(LLMProvider):
         return [c["program_id"] for c in candidates][: self._n]
 
 
+class HallucinatingLLMProvider(LLMProvider):
+    """LLM provider that returns a fixed list, simulating IDs not in the candidate set."""
+
+    def __init__(self, response: list[str]) -> None:
+        self._response = response
+
+    def rerank(
+        self,
+        query: str,
+        candidates: list[dict[str, str]],
+        size: int,
+        lang: str,
+    ) -> list[str]:
+        return list(self._response)
+
+
 DESCRIPTIONS = {
     "p1": "Tech podcast",
     "p2": "History show",
@@ -188,3 +204,30 @@ class TestRerankPrograms:
         )
         assert len(result) == 3
         assert all(pid in DESCRIPTIONS for pid in result)
+
+    def test_drops_hallucinated_ids_from_llm_response(self) -> None:
+        """IDs returned by the LLM that are not in rrf_ranking must be filtered out."""
+        result = rerank_programs(
+            llm=HallucinatingLLMProvider(["p2", "fake-id-123", "p1"]),
+            query="tech",
+            rrf_ranking=RRF_RANKING,
+            descriptions=DESCRIPTIONS,
+            size=3,
+            lang="en",
+        )
+        assert "fake-id-123" not in result
+        assert all(pid in RRF_RANKING for pid in result)
+        assert len(result) == 3
+
+    def test_pads_when_llm_only_returns_hallucinations(self) -> None:
+        """If the LLM returns no valid IDs, padding from RRF still produces size results."""
+        result = rerank_programs(
+            llm=HallucinatingLLMProvider(["fake-1", "fake-2", "fake-3"]),
+            query="tech",
+            rrf_ranking=RRF_RANKING,
+            descriptions=DESCRIPTIONS,
+            size=3,
+            lang="en",
+        )
+        assert len(result) == 3
+        assert all(pid in RRF_RANKING for pid in result)
