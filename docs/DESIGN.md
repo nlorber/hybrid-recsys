@@ -90,18 +90,26 @@ batch-friendly APIs.
 ## Duration Scoring
 
 Media items are scored by proximity to the caller's requested duration. The delta
-is defined as `requested_duration - media_duration` (in seconds).
+is defined as `requested_duration - media_duration` (in seconds), then normalised
+to minutes before applying the proximity formula.
 
 ```
-base  = 1 / (delta² + 1)
+delta_min = delta / 60
+
+base  = 1 / (delta_min² + 1)
 
 score = base                  if delta >= 0   (media is shorter than requested)
       = base + penalty        if delta < 0    (media is longer than requested)
 ```
 
+Normalising to minutes ensures the score decays meaningfully over typical podcast
+duration ranges (hundreds of seconds). With raw seconds, a 10-second difference
+would already yield base < 0.01; with minutes, a 1-minute difference yields
+base = 0.5 and a 10-minute difference yields base ≈ 0.01.
+
 The asymmetric penalty (default `–1.0`) discourages returning episodes that run
 longer than what the listener asked for, while items that are slightly too short
-receive only the natural `1/(delta²+1)` decay.
+receive only the natural `1/(delta_min²+1)` decay.
 
 ---
 
