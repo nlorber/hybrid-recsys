@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     ann_ef_construction: int = 200
     ann_query_k: int = 20
 
+    # LLM re-ranking
+    llm_rerank_timeout: float = 5.0
+
     # Paths
     data_dir: Path = Path("data")
 

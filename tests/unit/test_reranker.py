@@ -1,5 +1,7 @@
 """Tests for prompt building, LLM response parsing, and rerank_programs behavior."""
 
+import time
+
 from hybrid_recsys.providers.llm.base import LLMProvider
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.reranker import (
@@ -100,6 +102,23 @@ class FailingLLMProvider(LLMProvider):
         lang: str,
     ) -> list[str]:
         raise RuntimeError("LLM service unavailable")
+
+
+class SlowLLMProvider(LLMProvider):
+    """LLM provider that sleeps, for testing timeout fallback."""
+
+    def __init__(self, delay: float = 10.0) -> None:
+        self._delay = delay
+
+    def rerank(
+        self,
+        query: str,
+        candidates: list[dict[str, str]],
+        size: int,
+        lang: str,
+    ) -> list[str]:
+        time.sleep(self._delay)
+        return [c["program_id"] for c in candidates[:size]]
 
 
 class UnderSelectingLLMProvider(LLMProvider):
@@ -231,3 +250,16 @@ class TestRerankPrograms:
         )
         assert len(result) == 3
         assert all(pid in RRF_RANKING for pid in result)
+
+    def test_fallback_to_rrf_on_timeout(self) -> None:
+        """Slow LLM that exceeds timeout falls back to RRF order."""
+        result = rerank_programs(
+            llm=SlowLLMProvider(delay=10.0),
+            query="tech",
+            rrf_ranking=RRF_RANKING,
+            descriptions=DESCRIPTIONS,
+            size=3,
+            lang="en",
+            timeout=0.05,
+        )
+        assert result == ["p1", "p2", "p3"]

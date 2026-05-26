@@ -95,6 +95,7 @@ class RecommendationPipeline:
             descriptions=index.program_descriptions,
             size=request.size,
             lang=request.lang,
+            timeout=self._settings.llm_rerank_timeout,
         )
 
         # Step 5-7: Media ranking

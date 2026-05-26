@@ -2,6 +2,8 @@
 
 import ast
 import logging
+from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeoutError
 
 from hybrid_recsys.providers.llm.base import LLMProvider
 
@@ -98,11 +100,12 @@ def rerank_programs(
     descriptions: dict[str, str],
     size: int,
     lang: str,
+    timeout: float = 5.0,
 ) -> list[str]:
     """Re-rank programs via LLM with fallback to RRF ranking.
 
     Only invokes the LLM if RRF produced more candidates than requested.
-    On LLM failure, falls back to RRF order.
+    On LLM failure or timeout, falls back to RRF order.
 
     Args:
         llm: LLM provider for re-ranking.
@@ -111,6 +114,7 @@ def rerank_programs(
         descriptions: Mapping of program_id to description.
         size: Number of results to return.
         lang: Language code.
+        timeout: Maximum seconds to wait for the LLM response (RECSYS_LLM_RERANK_TIMEOUT).
 
     Returns:
         List of program_ids of length <= size.
@@ -124,8 +128,13 @@ def rerank_programs(
     ]
 
     try:
-        result = llm.rerank(query, candidates, size, lang)
-    except Exception:
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(llm.rerank, query, candidates, size, lang)
+            result = future.result(timeout=timeout)
+    except FuturesTimeoutError:
+        logger.warning("LLM reranking timed out after %.1fs, falling back to RRF", timeout)
+        return rrf_ranking[:size]
+    except (OSError, ValueError, RuntimeError):
         logger.exception("LLM reranking failed, falling back to RRF")
         return rrf_ranking[:size]
 
