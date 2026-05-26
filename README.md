@@ -80,6 +80,26 @@ the returned list. Precision drops from `@3` to `@5` as extra slots fill with
 off-topic items once the topic's relevant pool is exhausted; recall rises
 correspondingly.
 
+### Retrieval Ablation: Dense vs Sparse vs Hybrid
+
+Same 20-query benchmark, mock LLM (no re-ranking). Measures the contribution of
+each retrieval signal in isolation.
+
+| Mode    | @k | Precision | Recall | nDCG  |
+|---------|----|-----------:|-------:|------:|
+| dense   | @3 | 0.817     | 0.663  | 0.944 |
+| dense   | @5 | 0.680     | 0.831  | 0.937 |
+| sparse  | @3 | 0.767     | 0.640  | 0.909 |
+| sparse  | @5 | 0.610     | 0.791  | 0.887 |
+| hybrid  | @3 | 0.800     | 0.655  | 0.932 |
+| hybrid  | @5 | 0.680     | 0.847  | 0.940 |
+
+Dense retrieval alone leads on precision@3 and nDCG@3; hybrid closes the gap at
+@5 by recovering additional relevant programs through TF-IDF's lexical matching.
+Sparse-only consistently underperforms both, confirming that semantic embeddings
+carry the primary signal for this catalog. Reproduce with:
+`uv run python scripts/eval_ablation.py`
+
 ---
 
 ## Why This Design
