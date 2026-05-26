@@ -54,10 +54,23 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
+_SUPPORTED_LANGUAGES = ("en", "fr", "de")
+
+
 @app.post("/recommend", response_model=RecoResponse)
 def recommend(
     request: RecoRequest,
     pipeline: RecommendationPipeline = Depends(get_pipeline),  # noqa: B008
 ) -> RecoResponse:
     """Generate recommendations for a query."""
-    return pipeline.recommend(request)
+    try:
+        return pipeline.recommend(request)
+    except FileNotFoundError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"No index found for language '{request.lang}'. "
+                f"Supported languages with built indexes: {list(_SUPPORTED_LANGUAGES)}. "
+                "Run 'hybrid-recsys index' to build missing indexes."
+            ),
+        ) from exc

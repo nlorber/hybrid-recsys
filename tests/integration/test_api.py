@@ -171,3 +171,18 @@ class TestRecommendEndpoint:
             },
         )
         assert response.status_code == 422
+
+    def test_recommend_returns_400_for_missing_index(self, client) -> None:
+        """A valid lang with no built index returns 400, not 500."""
+        response = client.post(
+            "/recommend",
+            json={
+                "query": "histoire",
+                "lang": "fr",
+                "size": 2,
+            },
+        )
+        assert response.status_code == 400
+        detail = response.json()["detail"]
+        assert "fr" in detail
+        assert "index" in detail.lower()
