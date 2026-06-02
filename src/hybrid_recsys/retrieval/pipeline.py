@@ -6,12 +6,15 @@ from typing import Any
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
 from hybrid_recsys.indexing.tfidf import TfidfPipeline
-from hybrid_recsys.models import RecoRequest, RecoResponse
+from hybrid_recsys.models import ExplainedProgram, RecoRequest, RecoResponse
 from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
 from hybrid_recsys.providers.llm.base import LLMProvider
 from hybrid_recsys.providers.nlp.spacy import SpacyNLP
 from hybrid_recsys.retrieval.ann_search import query_ann_index
-from hybrid_recsys.retrieval.fusion import reciprocal_rank_fusion
+from hybrid_recsys.retrieval.fusion import (
+    reciprocal_rank_fusion,
+    reciprocal_rank_fusion_scored,
+)
 from hybrid_recsys.retrieval.reranker import rerank_programs
 from hybrid_recsys.retrieval.scorer import duration_score
 
@@ -109,6 +112,79 @@ class RecommendationPipeline:
         )
 
         return RecoResponse(programs=programs, medias=medias)
+
+    def recommend_explained(self, request: RecoRequest) -> list[ExplainedProgram]:
+        """Run program ranking and return per-result explainability metadata.
+
+        Shares the exact retrieval path as :meth:`recommend` (dense + sparse ANN,
+        RRF fusion, LLM re-rank) but surfaces the signals the lean ``RecoResponse``
+        hides: the RRF score, which retriever(s) found each program, and whether the
+        LLM re-ranker moved it from its fusion position.
+
+        Args:
+            request: Recommendation request with query, language, size.
+
+        Returns:
+            Ranked programs with explainability metadata, length <= ``request.size``.
+        """
+        index = self._load_index(request.lang)
+
+        query_embedding = self._embedder.embed(request.query)
+        query_tfidf = self._tfidf.transform_query(
+            request.query, index.tfidf_vectorizer, request.lang
+        )
+
+        k = min(self._settings.ann_query_k, len(index.program_ids))
+        emb_programs = [
+            index.program_ids[i] for i in query_ann_index(index.ann_embedding, query_embedding, k)
+        ]
+        tfidf_programs = [
+            index.program_ids[i] for i in query_ann_index(index.ann_tfidf, query_tfidf, k)
+        ]
+
+        program_rrf_scored = reciprocal_rank_fusion_scored(
+            ranked_lists=[emb_programs, tfidf_programs],
+            weights=self._settings.rrf_program_weights,
+            k=self._settings.rrf_program_k,
+        )
+        rrf_order = [pid for pid, _ in program_rrf_scored]
+        rrf_score = dict(program_rrf_scored)
+
+        final = rerank_programs(
+            llm=self._llm,
+            query=request.query,
+            rrf_ranking=rrf_order,
+            descriptions=index.program_descriptions,
+            size=request.size,
+            lang=request.lang,
+            timeout=self._settings.llm_rerank_timeout,
+        )
+
+        emb_set, tfidf_set = set(emb_programs), set(tfidf_programs)
+        final_set = set(final)
+        # Position each final program held in pure RRF order, to detect re-rank moves.
+        rrf_positions = {pid: i for i, pid in enumerate(p for p in rrf_order if p in final_set)}
+
+        results: list[ExplainedProgram] = []
+        for idx, pid in enumerate(final):
+            sources = [
+                name
+                for name, member in (("dense", pid in emb_set), ("sparse", pid in tfidf_set))
+                if member
+            ]
+            results.append(
+                ExplainedProgram(
+                    rank=idx + 1,
+                    program_id=pid,
+                    title=index.program_titles.get(pid, pid),
+                    description=index.program_descriptions.get(pid, ""),
+                    lang=request.lang,
+                    rrf_score=round(rrf_score.get(pid, 0.0), 4),
+                    sources=sources,
+                    reranked=rrf_positions.get(pid, idx) != idx,
+                )
+            )
+        return results
 
     def _rank_media(
         self,

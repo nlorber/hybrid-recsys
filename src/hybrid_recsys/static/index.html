@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hybrid·recsys — multilingual discovery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#08070f; --bg2:#0c0a17; --panel:#140f24; --line:#241a3a; --line2:#33264f;
+    --txt:#e7e2f3; --dim:#9b8fb6; --faint2:#5b4f78;
+    --accent:#9d7bff; --accent-dim:#5b4a9e;
+    --dense:#3fd0e6; --sparse:#f5b942; --rerank:#9d7bff;
+    --r:12px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    background:var(--bg); color:var(--txt);
+    font-family:'IBM Plex Sans',ui-sans-serif,system-ui,sans-serif; -webkit-font-smoothing:antialiased; line-height:1.5;
+    background-image:
+      radial-gradient(900px 520px at 80% -8%, #2a1b5033 0, transparent 60%),
+      radial-gradient(760px 460px at 6% 4%, #1c1a402e 0, transparent 55%),
+      linear-gradient(var(--bg2),var(--bg));
+    background-attachment:fixed;
+  }
+  body::before{content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.4;
+    background-image:linear-gradient(#ffffff06 1px,transparent 1px),linear-gradient(90deg,#ffffff06 1px,transparent 1px);
+    background-size:46px 46px; mask-image:radial-gradient(120% 90% at 50% 0,#000 35%,transparent 90%)}
+  body::after{content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.5;
+    background:repeating-linear-gradient(0deg,#0000 0 3px,#00000022 3px 4px); mix-blend-mode:overlay}
+  .wrap{position:relative; z-index:1; max-width:1000px; margin:0 auto; padding:40px 26px 70px}
+
+  header{display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:26px;
+    opacity:0; transform:translateY(-8px); animation:rise .6s .05s ease forwards}
+  .brand{font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:25px; letter-spacing:.04em}
+  .brand .dot{color:var(--accent)}
+  .brand .sub{display:block; font-family:'IBM Plex Mono',monospace; font-weight:400; font-size:11px; letter-spacing:.3em; color:var(--faint2); margin-top:5px; text-transform:uppercase}
+  .hright{display:flex; flex-direction:column; align-items:flex-end; gap:9px}
+  .gh{display:inline-flex; align-items:center; gap:8px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--dim); text-decoration:none; border:1px solid var(--line); background:#120d22cc; padding:7px 13px; border-radius:30px; transition:.16s}
+  .gh:hover{color:var(--txt); border-color:var(--accent-dim); box-shadow:0 0 0 3px #9d7bff16}
+  .gh svg{opacity:.82}
+  .status{display:flex; align-items:center; gap:9px; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--dim); border:1px solid var(--line); background:#120d22cc; padding:8px 13px; border-radius:30px}
+  .led{width:8px; height:8px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 0 #9d7bff66; animation:pulse 2.4s infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 #9d7bff55}70%{box-shadow:0 0 0 7px #9d7bff00}100%{box-shadow:0 0 0 0 #9d7bff00}}
+
+  .console{position:relative; border:1px solid var(--line); border-radius:var(--r); background:linear-gradient(#161029,#110c20);
+    box-shadow:0 24px 60px -34px #000, inset 0 1px 0 #ffffff08; padding:18px; opacity:0; transform:translateY(10px); animation:rise .6s .12s ease forwards}
+  .langs{display:flex; gap:6px; margin-bottom:13px}
+  .lang{font-family:'IBM Plex Mono',monospace; font-size:12px; letter-spacing:.06em; color:var(--dim); cursor:pointer; border:1px solid var(--line2); background:#0f0a1d; padding:6px 14px; border-radius:7px; transition:.15s}
+  .lang:hover{color:var(--txt)}
+  .lang.on{color:#0a0712; background:linear-gradient(#b49bff,#9072e6); border-color:transparent; font-weight:600}
+  .searchrow{display:flex; gap:10px}
+  input.q{flex:1; border:1px solid var(--line2); border-radius:9px; background:#0a0613; color:var(--txt); font-family:'IBM Plex Sans',sans-serif; font-size:15px; padding:13px 15px; outline:none; transition:border-color .18s, box-shadow .18s}
+  input.q:focus{border-color:var(--accent-dim); box-shadow:0 0 0 3px #9d7bff1f}
+  input.q::placeholder{color:#4b4067}
+  .go{font-family:'Chakra Petch',sans-serif; font-weight:600; letter-spacing:.08em; font-size:13.5px; cursor:pointer; color:#0a0712; background:linear-gradient(#b49bff,#8f70e6); border:none; padding:0 22px; border-radius:9px; text-transform:uppercase; transition:.16s; box-shadow:0 8px 22px -10px #9d7bffaa; white-space:nowrap}
+  .go:hover{filter:brightness(1.07)} .go:active{transform:translateY(1px)} .go:disabled{opacity:.55; cursor:default; box-shadow:none}
+  .chips{display:flex; gap:8px; flex-wrap:wrap; margin-top:13px}
+  .chip{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--dim); cursor:pointer; border:1px solid var(--line2); background:#0f0a1d; padding:6px 11px; border-radius:7px; transition:.16s}
+  .chip:hover{color:var(--txt); border-color:var(--accent-dim); background:#160f28}
+
+  .out{margin-top:22px; display:none} .out.show{display:block}
+  .pipe{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:18px}
+  .node{display:flex; align-items:center; gap:9px; border:1px solid var(--line); background:#120d22; border-radius:9px; padding:9px 13px; font-family:'IBM Plex Mono',monospace; font-size:12px; color:var(--faint2); transition:.3s}
+  .node .mk{width:8px;height:8px;border-radius:2px;background:#2c2147;transition:.3s}
+  .node.lit{color:var(--txt); border-color:var(--line2)} .node.lit .mk{background:var(--accent); box-shadow:0 0 9px var(--accent)}
+  .arrow{color:#3a2e57; font-family:'IBM Plex Mono',monospace}
+  .lat{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--dim); border:1px solid var(--line); border-radius:30px; padding:6px 12px}
+  .lat b{color:var(--accent); font-weight:600}
+
+  .card{position:relative; display:flex; gap:15px; border:1px solid var(--line); border-radius:var(--r); background:linear-gradient(#140f26,#110c1f); padding:15px 17px; margin-bottom:11px; opacity:0; transform:translateY(8px); animation:rise .5s ease forwards}
+  .rank{font-family:'Chakra Petch',sans-serif; font-weight:700; font-size:20px; color:var(--accent); min-width:34px; text-align:center; padding-top:2px}
+  .rank .h{display:block; font-family:'IBM Plex Mono',monospace; font-size:8.5px; color:var(--faint2); letter-spacing:.12em; font-weight:400; margin-top:2px}
+  .cbody{flex:1; min-width:0}
+  .ctop{display:flex; align-items:baseline; justify-content:space-between; gap:12px}
+  .title{font-weight:600; font-size:15.5px; color:var(--txt)}
+  .score{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--dim); white-space:nowrap}
+  .score b{color:var(--accent)}
+  .desc{font-size:13px; color:#a99dc4; margin:5px 0 10px; line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+  .meta{display:flex; align-items:center; gap:7px; flex-wrap:wrap}
+  .badge{font-family:'IBM Plex Mono',monospace; font-size:10.5px; letter-spacing:.04em; padding:4px 9px; border-radius:6px; border:1px solid}
+  .b-lang{color:var(--dim); border-color:var(--line2); background:#0f0a1d; text-transform:uppercase}
+  .b-dense{color:var(--dense); border-color:#1c4a52; background:#0a2226}
+  .b-sparse{color:var(--sparse); border-color:#4a3a12; background:#241c08}
+  .b-rerank{color:#0a0712; border-color:transparent; background:linear-gradient(#b49bff,#9072e6); font-weight:600}
+  .sbar{height:4px; border-radius:3px; background:#1a1330; overflow:hidden; margin-top:10px}
+  .sbar i{display:block; height:100%; width:0; border-radius:3px; background:linear-gradient(90deg,#5b4a9e,#b49bff); transition:width .9s cubic-bezier(.2,.8,.2,1)}
+
+  .err{border:1px solid #5a2630; background:#1c0e12; color:#f4a8a8; border-radius:var(--r); padding:15px 17px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; line-height:1.55}
+  .err b{color:#fb6f6f}
+  @keyframes rise{to{opacity:1; transform:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <div class="brand">hybrid<span class="dot">·</span>recsys<span class="sub">multilingual discovery · Nathan Lorber</span></div>
+    </div>
+    <div class="hright">
+      <a class="gh" href="https://github.com/nlorber/hybrid-recsys" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+        nlorber/hybrid-recsys
+      </a>
+      <div class="status"><span class="led"></span><span>dense + sparse · RRF · LLM re-rank</span></div>
+    </div>
+  </header>
+
+  <section class="console">
+    <div class="langs" id="langs">
+      <span class="lang on" data-l="en">EN</span><span class="lang" data-l="fr">FR</span><span class="lang" data-l="de">DE</span>
+    </div>
+    <div class="searchrow">
+      <input class="q" id="q" placeholder="Search the catalog…" spellcheck="false">
+      <button class="go" id="go">Recommend ▸</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </section>
+
+  <section class="out" id="out">
+    <div class="pipe">
+      <div class="node" id="n-ret"><span class="mk"></span>DENSE ⊕ SPARSE</div>
+      <span class="arrow">→</span>
+      <div class="node" id="n-rrf"><span class="mk"></span>RRF FUSION</div>
+      <span class="arrow">→</span>
+      <div class="node" id="n-rr"><span class="mk"></span>LLM RE-RANK</div>
+      <div class="lat" id="lat"></div>
+    </div>
+    <div id="body"></div>
+  </section>
+</div>
+
+<script>
+const PRESETS = {
+  en: ["true crime investigations", "calm bedtime stories", "startup founder interviews"],
+  fr: ["histoires policières vraies", "méditation et sommeil", "actualité économique"],
+  de: ["wahre kriminalfälle", "geschichten zum einschlafen", "tech und wissenschaft"],
+};
+const $ = s => document.querySelector(s);
+let lang = "en";
+const q = $("#q"), out = $("#out"), bodyEl = $("#body");
+
+function renderChips(){
+  $("#chips").innerHTML = PRESETS[lang].map(p=>`<span class="chip">${p}</span>`).join("");
+  document.querySelectorAll("#chips .chip").forEach(c=>c.addEventListener("click",()=>{q.value=c.textContent;q.focus();}));
+}
+renderChips();
+document.querySelectorAll(".lang").forEach(l=>l.addEventListener("click",()=>{
+  document.querySelectorAll(".lang").forEach(x=>x.classList.remove("on")); l.classList.add("on");
+  lang=l.dataset.l; renderChips();
+}));
+$("#go").addEventListener("click", run);
+q.addEventListener("keydown", e=>{ if(e.key==="Enter") run(); });
+
+function lit(){ ["n-ret","n-rrf","n-rr"].forEach((id,i)=>setTimeout(()=>$("#"+id).classList.add("lit"), 80+i*220)); }
+function reset(){ ["n-ret","n-rrf","n-rr"].forEach(id=>$("#"+id).classList.remove("lit")); }
+
+async function run(){
+  const query = q.value.trim(); if(!query){ q.focus(); return; }
+  const go=$("#go"); go.disabled=true; go.textContent="Searching…";
+  out.classList.add("show"); reset(); bodyEl.innerHTML=""; lit();
+  const t0=performance.now();
+  try{
+    const res = await fetch("/recommend/explain",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({query,lang,size:5})});
+    const dt = Math.round(performance.now()-t0);
+    if(!res.ok){ const d=await res.json().catch(()=>({})); throw new Error(d.detail || (res.status+" "+res.statusText)); }
+    render(await res.json(), dt);
+  }catch(err){
+    bodyEl.innerHTML = `<div class="err"><b>recommendation failed.</b> ${String(err.message||err)}<br>
+      <span style="color:#9b8fb6">Is the API up with an index built? <code>uv run hybrid-recsys index</code></span></div>`;
+  }finally{ go.disabled=false; go.textContent="Recommend ▸"; }
+}
+
+function render(d, dt){
+  $("#lat").innerHTML = `latency <b>${dt} ms</b>`;
+  const maxScore = Math.max(...d.programs.map(p=>p.rrf_score), 0.0001);
+  bodyEl.innerHTML = d.programs.map((p,idx)=>{
+    const srcs = (p.sources||[]).map(s=>`<span class="badge b-${s}">${s}</span>`).join("");
+    const rr = p.reranked ? `<span class="badge b-rerank">↑ re-ranked</span>` : "";
+    return `<div class="card" style="animation-delay:${idx*70}ms">
+      <div class="rank">${p.rank}<span class="h">RANK</span></div>
+      <div class="cbody">
+        <div class="ctop"><span class="title">${esc(p.title)}</span><span class="score">rrf <b>${p.rrf_score.toFixed(3)}</b></span></div>
+        <div class="desc">${esc(p.description)}</div>
+        <div class="meta"><span class="badge b-lang">${p.lang}</span>${srcs}${rr}</div>
+        <div class="sbar"><i data-w="${(p.rrf_score/maxScore*100).toFixed(1)}"></i></div>
+      </div></div>`;
+  }).join("");
+  requestAnimationFrame(()=>setTimeout(()=>document.querySelectorAll(".sbar i").forEach(i=>i.style.width=i.dataset.w+"%"),140));
+}
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+</script>
+</body>
+</html>

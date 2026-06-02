@@ -9,6 +9,7 @@ from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
 from hybrid_recsys.models import RecoRequest
 from hybrid_recsys.providers.embeddings.base import EmbeddingProvider
+from hybrid_recsys.providers.llm.base import LLMProvider
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.ann_search import build_ann_index
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
@@ -33,6 +34,15 @@ class FakeEmbeddingProvider(EmbeddingProvider):
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         return [self._hash_embed(t) for t in texts]
+
+
+class ReversingLLMProvider(LLMProvider):
+    """Returns candidates in reverse order — guarantees an order different from RRF."""
+
+    def rerank(
+        self, query: str, candidates: list[dict[str, str]], size: int, lang: str
+    ) -> list[str]:
+        return [c["program_id"] for c in candidates][::-1][:size]
 
 
 @pytest.fixture
@@ -76,6 +86,7 @@ def pipeline_env(tmp_path: Path):
     index = LanguageIndex(
         program_ids=program_ids,
         program_descriptions=descriptions,
+        program_titles={pid: f"Title {pid}" for pid in program_ids},
         media_data=media_data,
         ann_embedding=ann_emb,
         ann_tfidf=ann_tfidf,
@@ -176,3 +187,26 @@ class TestRecommendationPipeline:
         # p2 best keyword match (3 words overlap)
         assert result[0] == "p2"
         assert len(result) == 2
+
+
+class TestRecommendExplained:
+    def test_metadata_shape(self, pipeline_env) -> None:
+        request = RecoRequest(query="technology", lang="en", size=3)
+        programs = pipeline_env.recommend_explained(request)
+        assert 1 <= len(programs) <= 3
+        assert [p.rank for p in programs] == list(range(1, len(programs) + 1))
+        valid = {"p1", "p2", "p3", "p4", "p5"}
+        for p in programs:
+            assert p.program_id in valid
+            assert p.title == f"Title {p.program_id}"  # titles flow through from the index
+            assert p.lang == "en"
+            assert isinstance(p.rrf_score, float)
+            assert p.sources and set(p.sources) <= {"dense", "sparse"}
+            assert isinstance(p.reranked, bool)
+
+    def test_flags_reranked_when_llm_changes_order(self, pipeline_env) -> None:
+        # Reversing the RRF candidate order must move at least one program.
+        pipeline_env._llm = ReversingLLMProvider()
+        request = RecoRequest(query="technology", lang="en", size=3)
+        programs = pipeline_env.recommend_explained(request)
+        assert any(p.reranked for p in programs)

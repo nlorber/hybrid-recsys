@@ -18,6 +18,7 @@ class LanguageIndex:
 
     program_ids: list[str]
     program_descriptions: dict[str, str]
+    program_titles: dict[str, str]
     media_data: dict[str, list[dict[str, Any]]]
     ann_embedding: Index
     ann_tfidf: Index
@@ -50,6 +51,7 @@ class IndexStore:
         metadata = {
             "program_ids": index.program_ids,
             "program_descriptions": index.program_descriptions,
+            "program_titles": index.program_titles,
             "media_data": index.media_data,
             "embedding_dim": index.embedding_dim,
             "tfidf_dim": index.tfidf_dim,
@@ -91,6 +93,7 @@ class IndexStore:
         return LanguageIndex(
             program_ids=metadata["program_ids"],
             program_descriptions=metadata["program_descriptions"],
+            program_titles=metadata.get("program_titles", {}),
             media_data=metadata["media_data"],
             ann_embedding=ann_embedding,
             ann_tfidf=ann_tfidf,

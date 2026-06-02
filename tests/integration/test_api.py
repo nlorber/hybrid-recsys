@@ -38,6 +38,7 @@ def test_index_dir(tmp_path: Path):
             "p2": "History Rome",
             "p3": "Science space",
         },
+        program_titles={"p1": "Tech show", "p2": "Rome", "p3": "Space"},
         media_data={
             "p1": [
                 {"media_id": "m1", "episode": 1, "duration": 600, "title": "Ep1"},
@@ -150,6 +151,48 @@ class TestRecommendEndpoint:
             },
         )
         assert response.status_code == 422
+
+
+class TestRecommendExplainEndpoint:
+    def test_explain_returns_enriched_programs(self, client) -> None:
+        response = client.post(
+            "/recommend/explain",
+            json={"query": "technology", "lang": "en", "size": 2},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert data["query"] == "technology"
+        assert data["lang"] == "en"
+        assert len(data["programs"]) <= 2
+        if data["programs"]:
+            program = data["programs"][0]
+            assert {
+                "rank",
+                "program_id",
+                "title",
+                "description",
+                "lang",
+                "rrf_score",
+                "sources",
+                "reranked",
+            }.issubset(program)
+            assert program["rank"] == 1
+            assert all(src in {"dense", "sparse"} for src in program["sources"])
+
+    def test_explain_validates_lang(self, client) -> None:
+        response = client.post(
+            "/recommend/explain",
+            json={"query": "test", "lang": "xx", "size": 1},
+        )
+        assert response.status_code == 422
+
+
+class TestDemoEndpoint:
+    def test_root_serves_demo_html(self, client) -> None:
+        response = client.get("/")
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
+        assert "hybrid" in response.text.lower()
 
         response = client.post(
             "/recommend",

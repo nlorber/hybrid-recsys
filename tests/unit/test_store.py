@@ -24,6 +24,7 @@ def sample_index():
     return LanguageIndex(
         program_ids=["p1", "p2", "p3"],
         program_descriptions={"p1": "first", "p2": "second", "p3": "third"},
+        program_titles={"p1": "First", "p2": "Second", "p3": "Third"},
         media_data={
             "p1": [{"media_id": "m1", "episode": 1, "duration": 600, "title": "E1"}],
             "p2": [],
@@ -43,6 +44,12 @@ class TestIndexStoreRoundTrip:
         store.save("en", sample_index, tmp_path)
         loaded = store.load("en", tmp_path)
         assert loaded.program_ids == ["p1", "p2", "p3"]
+
+    def test_program_titles_preserved(self, sample_index, tmp_path) -> None:
+        store = IndexStore()
+        store.save("en", sample_index, tmp_path)
+        loaded = store.load("en", tmp_path)
+        assert loaded.program_titles == {"p1": "First", "p2": "Second", "p3": "Third"}
 
     def test_descriptions_preserved(self, sample_index, tmp_path) -> None:
         store = IndexStore()

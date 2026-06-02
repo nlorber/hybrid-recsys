@@ -79,6 +79,7 @@ class Vectorizer:
 
         # Prepare metadata
         program_descriptions = dict(zip(program_ids, descriptions, strict=True))
+        program_titles = {item.program_id: item.title for item in items}
         media_data: dict[str, list[dict[str, Any]]] = {}
         for item in items:
             media_data[item.program_id] = [m.model_dump() for m in item.media]
@@ -87,6 +88,7 @@ class Vectorizer:
         index = LanguageIndex(
             program_ids=program_ids,
             program_descriptions=program_descriptions,
+            program_titles=program_titles,
             media_data=media_data,
             ann_embedding=ann_embedding,
             ann_tfidf=ann_tfidf,

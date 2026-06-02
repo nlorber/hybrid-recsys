@@ -104,8 +104,8 @@ carry the primary signal for this catalog. Reproduce with:
 
 ## Why This Design
 
-- **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The combination reliably outperforms either alone._
-- **LLM re-ranking with automatic fallback** — optional OpenAI (GPT) re-ranker, pluggable via the `LLMProvider` ABC; falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
+- **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The ablation above shows the trade-off rather than blanket dominance: dense alone leads on precision@3, while the hybrid recovers relevant items through lexical matching for a clear recall@5 gain (0.847 vs 0.831). Hybrid favors recall and robustness over peak top-3 precision._
+- **LLM re-ranking with automatic fallback** — optional re-ranker behind a vendor-neutral `LLMProvider` ABC (OpenAI or Anthropic/Claude, selected by config); falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
 - **Voyager (HNSW) over FAISS** — single static file, no server process, pip-installable wheel. _Scales to ~10M items with minimal operational overhead. FAISS becomes relevant at 100M+ or when GPU acceleration is needed._
 - **Per-language indexes** — separate HNSW + TF-IDF indexes per language. _Multilingual embedding models underperform monolingual ones on non-English content; per-language indexing avoids cross-lingual noise in retrieval._
 - **Duration-aware scoring with asymmetric penalty** — penalizes results longer than requested more than shorter ones. _A product requirement: prioritize shorter-than-requested content over longer._
@@ -153,6 +153,8 @@ uv run hybrid-recsys serve
 # Listening on http://0.0.0.0:8000
 ```
 
+Then open <http://localhost:8000> for the interactive demo UI, or call the API directly.
+
 POST a recommendation request:
 
 ```bash
@@ -171,6 +173,17 @@ Example response:
 }
 ```
 
+For the ranking signals behind each result — the RRF score, which retriever(s)
+surfaced it (dense / sparse), and whether the LLM re-ranker moved it — call
+`POST /recommend/explain` (same request body). This powers the demo UI.
+
+```bash
+curl -s -X POST http://localhost:8000/recommend/explain \
+     -H "Content-Type: application/json" \
+     -d '{"query": "science for kids", "lang": "en", "size": 3}' \
+  | jq .
+```
+
 Interactive API docs: <http://localhost:8000/docs>
 
 ---
@@ -181,11 +194,15 @@ All settings use the `RECSYS_` prefix and can be set via environment variables o
 a `.env` file:
 
 ```bash
-RECSYS_EMBEDDING_PROVIDER=openai
-RECSYS_EMBEDDING_MODEL=text-embedding-3-small
-RECSYS_OPENAI_API_KEY=sk-...
-RECSYS_LLM_PROVIDER=openai
+RECSYS_EMBEDDING_PROVIDER=sentence-transformers   # local, no key; or: openai
+RECSYS_LLM_PROVIDER=anthropic                      # or: mock | openai
+RECSYS_LLM_MODEL=claude-haiku-4-5-20251001         # provider default if unset
+RECSYS_LLM_API_KEY=sk-ant-...                      # falls back to ANTHROPIC_API_KEY
 ```
+
+Provider selection is vendor-neutral and config-driven — embeddings and LLM
+re-ranking are chosen independently by name, so the two roles can use different
+vendors (e.g. local embeddings + a Claude re-ranker).
 
 See [docs/PROVIDERS.md](docs/PROVIDERS.md) for the full list of variables and
 available providers.
@@ -226,7 +243,7 @@ uv run pytest tests/integration
 | Sparse retrieval | scikit-learn TF-IDF |
 | ANN index | Voyager (HNSW) |
 | NLP tokenisation | spaCy |
-| Re-ranking | OpenAI (optional) / Mock |
+| Re-ranking | OpenAI / Anthropic (optional) / Mock |
 | API server | FastAPI + Uvicorn |
 | CLI | Typer |
 | Config | pydantic-settings |

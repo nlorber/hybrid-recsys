@@ -36,3 +36,24 @@ class RecoResponse(BaseModel):
 
     programs: list[str]
     medias: list[str]
+
+
+class ExplainedProgram(BaseModel):
+    """A ranked program enriched with retrieval explainability metadata."""
+
+    rank: int
+    program_id: str
+    title: str
+    description: str
+    lang: str
+    rrf_score: float
+    sources: list[str]  # retrievers that surfaced it: "dense" and/or "sparse"
+    reranked: bool  # whether the LLM re-ranker moved it from its RRF position
+
+
+class RecoExplainResponse(BaseModel):
+    """Enriched recommendation response exposing the hybrid ranking signals."""
+
+    query: str
+    lang: str
+    programs: list[ExplainedProgram]

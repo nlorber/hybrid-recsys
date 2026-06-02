@@ -1,6 +1,33 @@
 """Tests for Reciprocal Rank Fusion."""
 
-from hybrid_recsys.retrieval.fusion import reciprocal_rank_fusion
+from hybrid_recsys.retrieval.fusion import (
+    reciprocal_rank_fusion,
+    reciprocal_rank_fusion_scored,
+)
+
+
+class TestReciprocalRankFusionScored:
+    def test_returns_id_score_pairs_sorted_descending(self) -> None:
+        result = reciprocal_rank_fusion_scored(
+            ranked_lists=[["a", "b"], ["b", "a"]],
+            weights=[3.0, 2.0],
+            k=5,
+        )
+        ids = [item for item, _ in result]
+        scores = [score for _, score in result]
+        assert ids == ["a", "b"]
+        assert scores == sorted(scores, reverse=True)
+        # a: 3/(1+5) + 2/(2+5) = 0.7857...
+        assert abs(scores[0] - (3 / 6 + 2 / 7)) < 1e-6
+
+    def test_empty_input_returns_empty(self) -> None:
+        assert reciprocal_rank_fusion_scored([]) == []
+
+    def test_respects_output_size(self) -> None:
+        result = reciprocal_rank_fusion_scored(
+            ranked_lists=[["a", "b", "c", "d"]], k=5, output_size=2
+        )
+        assert len(result) == 2
 
 
 class TestReciprocalRankFusion:

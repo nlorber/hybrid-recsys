@@ -23,8 +23,11 @@ Embeddings and TF-IDF are complementary signals:
 | Embeddings | Capture semantic similarity, handle synonyms | Miss exact keyword matches          |
 | TF-IDF     | Exact lexical matches, fast, deterministic  | Blind to synonyms and paraphrases   |
 
-Running both and fusing their outputs reliably outperforms either alone on diverse
-queries — a result well documented in the information retrieval literature.
+Fusing both signals to improve robustness over either alone on diverse query
+distributions is well documented in the information retrieval literature. The effect
+is distribution-dependent: on this catalog's ablation (see the README) the benefit
+shows up as a higher recall@5 rather than a uniform win at every cutoff — dense alone
+still leads on precision@3.
 
 ---
 
@@ -175,9 +178,10 @@ All external dependencies are hidden behind thin abstract base classes:
 - `LLMProvider` — `rerank(query, candidates, ...) -> list[str]`
 
 Default implementations ship with the package (sentence-transformers and mock LLM).
-Optional OpenAI / Azure OpenAI implementations are loaded lazily so that the
-`openai` package is not required unless configured. See `docs/PROVIDERS.md` for
-configuration details.
+Optional OpenAI / Azure OpenAI and Anthropic (Claude) implementations are loaded
+lazily so that the `openai` / `anthropic` packages are not required unless
+configured. Embedding and LLM roles are selected independently by name, so they
+can use different vendors. See `docs/PROVIDERS.md` for configuration details.
 
 ---
 
