@@ -104,6 +104,23 @@ class FailingLLMProvider(LLMProvider):
         raise RuntimeError("LLM service unavailable")
 
 
+class _SimulatedAPIError(Exception):
+    """Stand-in for a vendor SDK error (e.g. anthropic.APIConnectionError)."""
+
+
+class APIErrorLLMProvider(LLMProvider):
+    """Raises a non-builtin exception, like a provider SDK connection error."""
+
+    def rerank(
+        self,
+        query: str,
+        candidates: list[dict[str, str]],
+        size: int,
+        lang: str,
+    ) -> list[str]:
+        raise _SimulatedAPIError("Connection error.")
+
+
 class SlowLLMProvider(LLMProvider):
     """LLM provider that sleeps, for testing timeout fallback."""
 
@@ -178,6 +195,18 @@ class TestRerankPrograms:
     def test_fallback_to_rrf_on_llm_failure(self) -> None:
         result = rerank_programs(
             llm=FailingLLMProvider(),
+            query="tech",
+            rrf_ranking=RRF_RANKING,
+            descriptions=DESCRIPTIONS,
+            size=3,
+            lang="en",
+        )
+        assert result == ["p1", "p2", "p3"]
+
+    def test_fallback_to_rrf_on_provider_api_error(self) -> None:
+        """A vendor SDK error (not a builtin exception) must still degrade to RRF."""
+        result = rerank_programs(
+            llm=APIErrorLLMProvider(),
             query="tech",
             rrf_ranking=RRF_RANKING,
             descriptions=DESCRIPTIONS,

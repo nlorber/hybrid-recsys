@@ -134,7 +134,10 @@ def rerank_programs(
     except FuturesTimeoutError:
         logger.warning("LLM reranking timed out after %.1fs, falling back to RRF", timeout)
         return rrf_ranking[:size]
-    except (OSError, ValueError, RuntimeError):
+    except Exception:
+        # Re-ranking is a best-effort optimization over the RRF ranking: any provider
+        # failure (network/API errors, bad responses, etc.) must degrade gracefully
+        # rather than fail the request.
         logger.exception("LLM reranking failed, falling back to RRF")
         return rrf_ranking[:size]
 

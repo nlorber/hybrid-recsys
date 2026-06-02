@@ -2,6 +2,7 @@
 
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from hybrid_recsys.retrieval.ann_search import IndexMetric
@@ -14,14 +15,19 @@ class Settings(BaseSettings):
     Example: RECSYS_EMBEDDING_PROVIDER=openai
     """
 
-    model_config = SettingsConfigDict(env_prefix="RECSYS_")
+    model_config = SettingsConfigDict(env_prefix="RECSYS_", env_file=".env", extra="ignore")
 
-    # Provider selection
+    # Embedding provider (vendor-neutral; selected by name, configured generically)
     embedding_provider: str = "sentence-transformers"
-    llm_provider: str = "mock"
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
-    openai_api_key: str | None = None
-    openai_base_url: str | None = None
+    embedding_api_key: str | None = None
+    embedding_base_url: str | None = None
+
+    # LLM re-ranking provider (vendor-neutral; selected by name, configured generically)
+    llm_provider: str = "mock"
+    llm_model: str | None = None
+    llm_api_key: str | None = None
+    llm_base_url: str | None = None
 
     # Duration scoring
     default_duration: int = 600
@@ -46,6 +52,25 @@ class Settings(BaseSettings):
 
     # Paths
     data_dir: Path = Path("data")
+
+    @field_validator(
+        "embedding_api_key",
+        "embedding_base_url",
+        "llm_model",
+        "llm_api_key",
+        "llm_base_url",
+        mode="before",
+    )
+    @classmethod
+    def _blank_to_none(cls, value: object) -> object:
+        """Treat blank env vars (e.g. ``RECSYS_LLM_BASE_URL=``) as unset.
+
+        pydantic reads an empty env var as ``""``; passing that as a provider
+        ``base_url``/``api_key`` breaks the SDK clients, so coerce blanks to None.
+        """
+        if isinstance(value, str) and value.strip() == "":
+            return None
+        return value
 
     @property
     def index_dir(self) -> Path:

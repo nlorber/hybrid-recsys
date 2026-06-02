@@ -30,7 +30,7 @@ Requires the optional `openai` extra: `uv sync --extra openai`.
 ```bash
 RECSYS_EMBEDDING_PROVIDER=openai
 RECSYS_EMBEDDING_MODEL=text-embedding-3-small
-RECSYS_OPENAI_API_KEY=sk-...
+RECSYS_EMBEDDING_API_KEY=sk-...
 ```
 
 ### Azure OpenAI
@@ -40,8 +40,8 @@ Same as OpenAI, but point the client at your Azure resource endpoint:
 ```bash
 RECSYS_EMBEDDING_PROVIDER=openai
 RECSYS_EMBEDDING_MODEL=text-embedding-3-small
-RECSYS_OPENAI_API_KEY=sk-...
-RECSYS_OPENAI_BASE_URL=https://your-resource.openai.azure.com/
+RECSYS_EMBEDDING_API_KEY=sk-...
+RECSYS_EMBEDDING_BASE_URL=https://your-resource.openai.azure.com/
 ```
 
 > **Note:** After switching embedding providers, always rebuild the indexes:
@@ -73,11 +73,26 @@ Requires the optional `openai` extra: `uv sync --extra openai`.
 
 ```bash
 RECSYS_LLM_PROVIDER=openai
-RECSYS_OPENAI_API_KEY=sk-...
+RECSYS_LLM_MODEL=gpt-4o-mini       # optional; provider default if unset
+RECSYS_LLM_API_KEY=sk-...
+RECSYS_LLM_BASE_URL=               # optional; e.g. an OpenAI-compatible endpoint
 ```
 
-The same `RECSYS_OPENAI_BASE_URL` override used for embeddings also applies here,
-so a single base URL covers both providers when using Azure OpenAI.
+### Anthropic (Claude)
+
+Requires the optional `anthropic` extra: `uv sync --extra anthropic`.
+
+```bash
+RECSYS_LLM_PROVIDER=anthropic
+RECSYS_LLM_MODEL=claude-haiku-4-5-20251001   # optional; this is the default
+RECSYS_LLM_API_KEY=sk-ant-...                # falls back to ANTHROPIC_API_KEY
+```
+
+Embedding and LLM credentials are configured independently (`RECSYS_EMBEDDING_*`
+vs `RECSYS_LLM_*`), so the two roles can use different vendors — for example local
+`sentence-transformers` embeddings paired with a Claude re-ranker. Provider
+selection is purely config-driven; the pipeline and API depend only on the
+provider ABCs.
 
 ---
 
@@ -87,9 +102,12 @@ so a single base URL covers both providers when using Azure OpenAI.
 |----------------------------|--------------------------|----------------------------------------------|
 | `RECSYS_EMBEDDING_PROVIDER`| `sentence-transformers`  | Embedding backend (`sentence-transformers`, `openai`) |
 | `RECSYS_EMBEDDING_MODEL`   | `paraphrase-multilingual-MiniLM-L12-v2` | Model name / deployment ID |
-| `RECSYS_LLM_PROVIDER`      | `mock`                   | LLM backend (`mock`, `openai`)               |
-| `RECSYS_OPENAI_API_KEY`    | *(unset)*                | OpenAI or Azure OpenAI API key               |
-| `RECSYS_OPENAI_BASE_URL`   | *(unset)*                | Override base URL (Azure OpenAI)             |
+| `RECSYS_LLM_PROVIDER`      | `mock`                   | LLM backend (`mock`, `openai`, `anthropic`)  |
+| `RECSYS_LLM_MODEL`         | *(provider default)*     | Re-rank model (e.g. `claude-haiku-4-5-20251001`) |
+| `RECSYS_LLM_API_KEY`       | *(unset)*                | API key for the LLM provider                 |
+| `RECSYS_LLM_BASE_URL`      | *(unset)*                | Override base URL for the LLM provider        |
+| `RECSYS_EMBEDDING_API_KEY` | *(unset)*                | API key for the embedding provider           |
+| `RECSYS_EMBEDDING_BASE_URL`| *(unset)*                | Override base URL for the embedding provider  |
 | `RECSYS_DATA_DIR`          | `data`                   | Root directory for catalog and indexes       |
 | `RECSYS_DEFAULT_DURATION`  | `600`                    | Fallback duration in seconds (10 min)        |
 | `RECSYS_DURATION_PENALTY`  | `-1.0`                   | Score penalty for media longer than requested|
