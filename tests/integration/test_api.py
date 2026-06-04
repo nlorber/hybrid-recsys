@@ -12,7 +12,7 @@ from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
 from hybrid_recsys.retrieval.ann_search import build_ann_index
 from hybrid_recsys.retrieval.pipeline import RecommendationPipeline
-from tests.conftest import FixedEmbedder
+from tests.conftest import FakeEmbeddingProvider
 
 
 @pytest.fixture
@@ -21,7 +21,12 @@ def test_index_dir(tmp_path: Path):
     dim = 8
     tfidf_dim = 3
 
-    emb_vecs = [[0.1 * (i + 1)] * dim for i in range(3)]
+    # Build dense vectors from the program descriptions with the same text-sensitive
+    # embedder used for queries, so the dense retrieval space is coherent and an
+    # exact-match query lands on its program (gives the tests real retrieval signal).
+    descriptions = ["Tech AI", "History Rome", "Science space"]
+    embedder = FakeEmbeddingProvider(dim=dim)
+    emb_vecs = embedder.embed_batch(descriptions)
     tfidf_vecs = [[0.1 * (i + 1)] * tfidf_dim for i in range(3)]
 
     ann_emb = build_ann_index(emb_vecs)
@@ -73,7 +78,7 @@ def client(test_index_dir):
             return test_index_dir
 
     pipeline = RecommendationPipeline(
-        embedding_provider=FixedEmbedder(),
+        embedding_provider=FakeEmbeddingProvider(dim=8),
         llm_provider=MockLLMProvider(),
         settings=TestSettings(),
     )
@@ -104,6 +109,24 @@ class TestRecommendEndpoint:
         data = response.json()
         assert "programs" in data
         assert "medias" in data
+
+    def test_recommend_discriminates_by_query(self, client) -> None:
+        """Different queries retrieve different top programs.
+
+        Guards against a degenerate/constant query embedder: querying a
+        program's own description must rank that program first, and two
+        distinct queries must not collapse to the same top result.
+        """
+        r1 = client.post("/recommend/explain", json={"query": "Tech AI", "lang": "en", "size": 3})
+        r2 = client.post(
+            "/recommend/explain", json={"query": "History Rome", "lang": "en", "size": 3}
+        )
+        assert r1.status_code == 200
+        assert r2.status_code == 200
+        top1 = r1.json()["programs"][0]["program_id"]
+        top2 = r2.json()["programs"][0]["program_id"]
+        assert top1 == "p1"
+        assert top2 == "p2"
 
     def test_recommend_respects_size(self, client) -> None:
         response = client.post(
