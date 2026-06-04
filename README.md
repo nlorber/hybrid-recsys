@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-MIT-green)
 
 Multilingual content recommendation engine combining dual retrieval, Reciprocal
-Rank Fusion, and LLM re-ranking.
+Rank Fusion, and optional LLM re-ranking.
 
 ---
 
@@ -18,10 +18,11 @@ flowchart TD
     Q[Query] --> EMB[Dense Embedding]
     Q --> TFIDF[TF-IDF Vectorise]
 
-    EMB --> ANN[Voyager HNSW ANN Search\nper-language indexes]
-    TFIDF --> ANN
+    EMB --> ANN_E[Voyager HNSW\nembedding index]
+    TFIDF --> ANN_T[Voyager HNSW\nTF-IDF index]
 
-    ANN --> RRF1[RRF Fusion\nprograms]
+    ANN_E --> RRF1[RRF Fusion\nprograms]
+    ANN_T --> RRF1
     RRF1 --> LLM[LLM Re-rank\nwith fallback]
 
     LLM --> EMB_M[Embedding\nmedia list]
@@ -183,6 +184,8 @@ curl -s -X POST http://localhost:8000/recommend/explain \
      -d '{"query": "science for kids", "lang": "en", "size": 3}' \
   | jq .
 ```
+
+Liveness check: `GET /health` returns `{"status": "ok"}`.
 
 Interactive API docs: <http://localhost:8000/docs>
 

@@ -113,6 +113,9 @@ provider ABCs.
 | `RECSYS_DURATION_PENALTY`  | `-1.0`                   | Score penalty for media longer than requested|
 | `RECSYS_RRF_PROGRAM_K`     | `5`                      | RRF k parameter for program fusion           |
 | `RECSYS_RRF_MEDIA_K`       | `8`                      | RRF k parameter for media fusion             |
+| `RECSYS_RRF_PROGRAM_WEIGHTS`| `[3.0, 2.0]`            | RRF weights for program lists (dense, sparse) |
+| `RECSYS_RRF_MEDIA_WEIGHTS` | `[3.0, 2.0, 3.0]`        | RRF weights for media lists (dense, sparse, duration) |
+| `RECSYS_LLM_RERANK_TIMEOUT`| `5.0`                    | Timeout (s) for the LLM re-rank call before RRF fallback |
 | `RECSYS_ANN_METRIC`        | `cosine`                 | Distance metric (`cosine`, `euclidean`, `dot`) |
 | `RECSYS_ANN_M`             | `16`                     | HNSW graph degree (higher = better recall, more memory) |
 | `RECSYS_ANN_EF_CONSTRUCTION`| `200`                   | HNSW build-time candidate list size           |
