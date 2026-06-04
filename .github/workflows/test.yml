@@ -28,7 +28,7 @@ jobs:
           restore-keys: uv-
 
       - name: Install dependencies
-        run: uv sync --extra dev --extra openai
+        run: uv sync --extra dev --extra openai --extra anthropic
 
       - name: Download spaCy models
         run: |
