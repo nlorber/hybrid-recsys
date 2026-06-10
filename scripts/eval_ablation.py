@@ -118,8 +118,12 @@ class AblationPipeline(RecommendationPipeline):
 # ---------------------------------------------------------------------------
 
 
-def run_ablation(catalog_path: Path, index_dir: Path) -> None:
-    """Run the ablation evaluation and print a markdown results table."""
+def run_ablation(
+    catalog_path: Path,
+    index_dir: Path,
+    metrics_path: Path = Path("reports/ablation_metrics.json"),
+) -> None:
+    """Run the ablation evaluation, print a markdown table, and persist results."""
 
     class AblationSettings(Settings):
         @property
@@ -221,6 +225,11 @@ def run_ablation(catalog_path: Path, index_dir: Path) -> None:
             f"| {row['mode']:<7} | @{row['k']} "
             f"| {row['precision']:.3f}     | {row['recall']:.3f}  | {row['ndcg']:.3f} |"
         )
+
+    # Persist a committed source of truth for the README "Retrieval Ablation" table.
+    metrics_path.parent.mkdir(parents=True, exist_ok=True)
+    metrics_path.write_text(json.dumps({"rows": rows}, indent=2) + "\n")
+    print(f"\nWrote metrics to {metrics_path}")
 
 
 if __name__ == "__main__":

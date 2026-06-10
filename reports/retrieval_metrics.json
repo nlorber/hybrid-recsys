@@ -1,0 +1,378 @@
+{
+  "averages": {
+    "3": {
+      "precision": 0.7833333333333333,
+      "recall": 0.6525000000000001,
+      "ndcg": 0.9203918089034134,
+      "n_queries": 20
+    },
+    "5": {
+      "precision": 0.67,
+      "recall": 0.8421031746031746,
+      "ndcg": 0.9339839157245111,
+      "n_queries": 20
+    }
+  },
+  "per_query": [
+    {
+      "lang": "en",
+      "query": "artificial intelligence machine learning",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.6,
+      "ndcg": 1.0,
+      "relevant_count": 5
+    },
+    {
+      "lang": "en",
+      "query": "artificial intelligence machine learning",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 0.8,
+      "ndcg": 0.8687949224876582,
+      "relevant_count": 5
+    },
+    {
+      "lang": "en",
+      "query": "ancient history civilization empires",
+      "k": 3,
+      "precision": 0.3333333333333333,
+      "recall": 0.3333333333333333,
+      "ndcg": 0.46927872602275644,
+      "relevant_count": 3
+    },
+    {
+      "lang": "en",
+      "query": "ancient history civilization empires",
+      "k": 5,
+      "precision": 0.6,
+      "recall": 1.0,
+      "ndcg": 0.8529278650606567,
+      "relevant_count": 3
+    },
+    {
+      "lang": "en",
+      "query": "physics biology scientific discovery",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.3333333333333333,
+      "ndcg": 1.0,
+      "relevant_count": 9
+    },
+    {
+      "lang": "en",
+      "query": "physics biology scientific discovery",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 0.4444444444444444,
+      "ndcg": 0.8687949224876582,
+      "relevant_count": 9
+    },
+    {
+      "lang": "en",
+      "query": "football basketball sports athletes",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.6,
+      "ndcg": 1.0,
+      "relevant_count": 5
+    },
+    {
+      "lang": "en",
+      "query": "football basketball sports athletes",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 0.8,
+      "ndcg": 0.8687949224876582,
+      "relevant_count": 5
+    },
+    {
+      "lang": "en",
+      "query": "true crime investigation murder",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.75,
+      "ndcg": 1.0,
+      "relevant_count": 4
+    },
+    {
+      "lang": "en",
+      "query": "true crime investigation murder",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 4
+    },
+    {
+      "lang": "en",
+      "query": "comedy humor funny jokes",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "en",
+      "query": "comedy humor funny jokes",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "en",
+      "query": "climate change environment ecology",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 0.5,
+      "ndcg": 0.7039180890341347,
+      "relevant_count": 4
+    },
+    {
+      "lang": "en",
+      "query": "climate change environment ecology",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 1.0,
+      "ndcg": 0.9047172294870751,
+      "relevant_count": 4
+    },
+    {
+      "lang": "en",
+      "query": "philosophy ethics freedom justice",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "en",
+      "query": "philosophy ethics freedom justice",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "en",
+      "query": "music jazz classical albums",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.75,
+      "ndcg": 1.0,
+      "relevant_count": 4
+    },
+    {
+      "lang": "en",
+      "query": "music jazz classical albums",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 4
+    },
+    {
+      "lang": "en",
+      "query": "health nutrition exercise wellness",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.6,
+      "ndcg": 1.0,
+      "relevant_count": 5
+    },
+    {
+      "lang": "en",
+      "query": "health nutrition exercise wellness",
+      "k": 5,
+      "precision": 1.0,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 5
+    },
+    {
+      "lang": "fr",
+      "query": "intelligence artificielle apprentissage automatiqu",
+      "k": 3,
+      "precision": 0.3333333333333333,
+      "recall": 0.14285714285714285,
+      "ndcg": 0.46927872602275644,
+      "relevant_count": 7
+    },
+    {
+      "lang": "fr",
+      "query": "intelligence artificielle apprentissage automatiqu",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 0.2857142857142857,
+      "ndcg": 0.48522855511632257,
+      "relevant_count": 7
+    },
+    {
+      "lang": "fr",
+      "query": "histoire ancienne civilisation Rome",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.42857142857142855,
+      "ndcg": 1.0,
+      "relevant_count": 7
+    },
+    {
+      "lang": "fr",
+      "query": "histoire ancienne civilisation Rome",
+      "k": 5,
+      "precision": 1.0,
+      "recall": 0.7142857142857143,
+      "ndcg": 1.0,
+      "relevant_count": 7
+    },
+    {
+      "lang": "fr",
+      "query": "physique biologie decouverte scientifique",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.25,
+      "ndcg": 1.0,
+      "relevant_count": 12
+    },
+    {
+      "lang": "fr",
+      "query": "physique biologie decouverte scientifique",
+      "k": 5,
+      "precision": 1.0,
+      "recall": 0.4166666666666667,
+      "ndcg": 1.0,
+      "relevant_count": 12
+    },
+    {
+      "lang": "fr",
+      "query": "football rugby sport athletes",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 0.42857142857142855,
+      "ndcg": 1.0,
+      "relevant_count": 7
+    },
+    {
+      "lang": "fr",
+      "query": "football rugby sport athletes",
+      "k": 5,
+      "precision": 1.0,
+      "recall": 0.7142857142857143,
+      "ndcg": 1.0,
+      "relevant_count": 7
+    },
+    {
+      "lang": "fr",
+      "query": "crime enquete meurtre judiciaire",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 0.3333333333333333,
+      "ndcg": 0.7653606369886217,
+      "relevant_count": 6
+    },
+    {
+      "lang": "fr",
+      "query": "crime enquete meurtre judiciaire",
+      "k": 5,
+      "precision": 0.8,
+      "recall": 0.6666666666666666,
+      "ndcg": 0.830419897363192,
+      "relevant_count": 6
+    },
+    {
+      "lang": "de",
+      "query": "k\u00fcnstliche Intelligenz digitale Transformation",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "k\u00fcnstliche Intelligenz digitale Transformation",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Weltgeschichte antike Imperien Revolutionen",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Weltgeschichte antike Imperien Revolutionen",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Physik Biologie wissenschaftliche Entdeckungen",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Physik Biologie wissenschaftliche Entdeckungen",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Fu\u00dfball Tennis Profisport",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Fu\u00dfball Tennis Profisport",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Kriminalf\u00e4lle Ermittlungen Zeugenaussagen",
+      "k": 3,
+      "precision": 0.6666666666666666,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    },
+    {
+      "lang": "de",
+      "query": "Kriminalf\u00e4lle Ermittlungen Zeugenaussagen",
+      "k": 5,
+      "precision": 0.4,
+      "recall": 1.0,
+      "ndcg": 1.0,
+      "relevant_count": 2
+    }
+  ]
+}

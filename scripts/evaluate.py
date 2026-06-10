@@ -156,8 +156,12 @@ def build_program_lang_map(catalog: dict) -> dict[str, str]:
     return {prog["program_id"]: prog["lang"] for prog in catalog["programs"]}
 
 
-def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
-    """Run offline evaluation and print results."""
+def run_evaluation(
+    catalog_path: Path,
+    index_dir: Path,
+    metrics_path: Path = Path("reports/retrieval_metrics.json"),
+) -> None:
+    """Run offline evaluation, print results, and persist them to ``metrics_path``."""
     # Lazy imports to keep metric functions importable without heavy deps
     from hybrid_recsys.config import Settings
     from hybrid_recsys.models import RecoRequest
@@ -230,13 +234,27 @@ def run_evaluation(catalog_path: Path, index_dir: Path) -> None:
             f"{r['ndcg']:>6.3f}  {r['query']}"
         )
 
+    averages: dict[str, dict[str, float]] = {}
     if results:
         for k in k_values:
             k_results = [r for r in results if r["k"] == k]
             avg_p = sum(r["precision"] for r in k_results) / len(k_results)
             avg_r = sum(r["recall"] for r in k_results) / len(k_results)
             avg_n = sum(r["ndcg"] for r in k_results) / len(k_results)
+            averages[str(k)] = {
+                "precision": avg_p,
+                "recall": avg_r,
+                "ndcg": avg_n,
+                "n_queries": len(k_results),
+            }
             print(f"\nAverage @{k}: precision={avg_p:.3f}  recall={avg_r:.3f}  nDCG={avg_n:.3f}")
+
+    # Persist a committed source of truth for the README "Retrieval Quality" table.
+    metrics_path.parent.mkdir(parents=True, exist_ok=True)
+    metrics_path.write_text(
+        json.dumps({"averages": averages, "per_query": results}, indent=2) + "\n"
+    )
+    print(f"\nWrote metrics to {metrics_path}")
 
 
 if __name__ == "__main__":

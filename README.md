@@ -18,18 +18,18 @@ flowchart TD
     Q[Query] --> EMB[Dense Embedding]
     Q --> TFIDF[TF-IDF Vectorise]
 
-    EMB --> ANN_E[Voyager HNSW\nembedding index]
-    TFIDF --> ANN_T[Voyager HNSW\nTF-IDF index]
+    EMB --> ANN_E[Voyager HNSW<br/>embedding index]
+    TFIDF --> ANN_T[Voyager HNSW<br/>TF-IDF index]
 
-    ANN_E --> RRF1[RRF Fusion\nprograms]
+    ANN_E --> RRF1[RRF Fusion<br/>programs]
     ANN_T --> RRF1
-    RRF1 --> LLM[LLM Re-rank\nwith fallback]
+    RRF1 --> LLM[LLM Re-rank<br/>with fallback]
 
-    LLM --> EMB_M[Embedding\nmedia list]
-    LLM --> TFIDF_M[TF-IDF\nmedia list]
-    LLM --> DUR[Duration\nscoring]
+    LLM --> EMB_M[Embedding<br/>media list]
+    LLM --> TFIDF_M[TF-IDF<br/>media list]
+    LLM --> DUR[Duration<br/>scoring]
 
-    EMB_M --> RRF2[RRF Fusion\nmedia]
+    EMB_M --> RRF2[RRF Fusion<br/>media]
     TFIDF_M --> RRF2
     DUR --> RRF2
 
@@ -72,9 +72,9 @@ topic matches the query topic.
 
 | Metric    | @3    | @5    |
 |-----------|-------|-------|
-| Precision | 0.800 | 0.680 |
-| Recall    | 0.655 | 0.847 |
-| nDCG      | 0.932 | 0.940 |
+| Precision | 0.783 | 0.670 |
+| Recall    | 0.653 | 0.842 |
+| nDCG      | 0.920 | 0.934 |
 
 nDCG near `1.0` indicates that relevant programs consistently rank at the top of
 the returned list. Precision drops from `@3` to `@5` as extra slots fill with
@@ -88,12 +88,12 @@ each retrieval signal in isolation.
 
 | Mode    | @k | Precision | Recall | nDCG  |
 |---------|----|-----------:|-------:|------:|
-| dense   | @3 | 0.817     | 0.663  | 0.944 |
-| dense   | @5 | 0.680     | 0.831  | 0.937 |
-| sparse  | @3 | 0.767     | 0.640  | 0.909 |
-| sparse  | @5 | 0.610     | 0.791  | 0.887 |
-| hybrid  | @3 | 0.800     | 0.655  | 0.932 |
-| hybrid  | @5 | 0.680     | 0.847  | 0.940 |
+| dense   | @3 | 0.833     | 0.675  | 0.959 |
+| dense   | @5 | 0.680     | 0.833  | 0.941 |
+| sparse  | @3 | 0.717     | 0.615  | 0.850 |
+| sparse  | @5 | 0.590     | 0.773  | 0.852 |
+| hybrid  | @3 | 0.783     | 0.653  | 0.920 |
+| hybrid  | @5 | 0.670     | 0.842  | 0.934 |
 
 Dense retrieval alone leads on precision@3 and nDCG@3; hybrid closes the gap at
 @5 by recovering additional relevant programs through TF-IDF's lexical matching.
@@ -105,7 +105,7 @@ carry the primary signal for this catalog. Reproduce with:
 
 ## Why This Design
 
-- **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The ablation above shows the trade-off rather than blanket dominance: dense alone leads on precision@3, while the hybrid recovers relevant items through lexical matching for a clear recall@5 gain (0.847 vs 0.831). Hybrid favors recall and robustness over peak top-3 precision._
+- **Dual retrieval (dense + sparse) with RRF fusion** — runs both embedding ANN and TF-IDF, merges with Reciprocal Rank Fusion. _Dense embeddings miss exact keyword matches; TF-IDF misses semantic similarity. The ablation above shows the trade-off rather than blanket dominance: dense alone leads on precision@3, while the hybrid recovers relevant items through lexical matching for a recall@5 gain (0.842 vs 0.833). Hybrid favors recall and robustness over peak top-3 precision._
 - **LLM re-ranking with automatic fallback** — optional re-ranker behind a vendor-neutral `LLMProvider` ABC (OpenAI or Anthropic/Claude, selected by config); falls back to RRF order on timeout or parse failure. _Network latency and API errors are real in production. The system must return results even when the LLM is unavailable._
 - **Voyager (HNSW) over FAISS** — single static file, no server process, pip-installable wheel. _Scales to ~10M items with minimal operational overhead. FAISS becomes relevant at 100M+ or when GPU acceleration is needed._
 - **Per-language indexes** — separate HNSW + TF-IDF indexes per language. _Multilingual embedding models underperform monolingual ones on non-English content; per-language indexing avoids cross-lingual noise in retrieval._
