@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from hybrid_recsys.api import app
+from hybrid_recsys.api import app, get_pipeline
 from hybrid_recsys.config import Settings
 from hybrid_recsys.indexing.store import IndexStore, LanguageIndex
 from hybrid_recsys.providers.llm.mock import MockLLMProvider
@@ -70,7 +70,14 @@ def test_index_dir(tmp_path: Path):
 
 @pytest.fixture
 def client(test_index_dir):
-    """Create a test client with mock providers and test data."""
+    """Create a test client with mock providers and test data.
+
+    Overrides the `get_pipeline` dependency with a fully mocked pipeline and constructs
+    `TestClient(app)` *without* the context manager, so the real `lifespan` never runs.
+    This keeps the test hermetic: it does not build the actual sentence-transformers model
+    or instantiate a provider chosen by ambient `.env`/env vars (e.g. RECSYS_LLM_PROVIDER),
+    which would otherwise couple the suite to the developer's local configuration.
+    """
 
     class TestSettings(Settings):
         @property
@@ -83,9 +90,11 @@ def client(test_index_dir):
         settings=TestSettings(),
     )
 
-    with TestClient(app) as c:
-        app.state.pipeline = pipeline
-        yield c
+    app.dependency_overrides[get_pipeline] = lambda: pipeline
+    try:
+        yield TestClient(app)
+    finally:
+        app.dependency_overrides.clear()
 
 
 class TestHealthEndpoint:
