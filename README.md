@@ -58,11 +58,12 @@ Measured on the 200-program synthetic catalog (1075 media items across `en`, `fr
 
 | Metric | Value |
 |--------|-------|
-| p50    | 10.5 ms |
-| p95    | 15.8 ms |
-| Max    | 35.3 ms |
+| p50    | 9.7 ms |
+| p95    | 14.4 ms |
+| Max    | 27.4 ms |
 
-Benchmarked over 200 queries, single-threaded, no LLM re-ranking, on macOS arm64 with `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2`. Latency is dominated by query embedding and HNSW ANN search.
+Benchmarked over 200 queries, single-threaded, no LLM re-ranking, on macOS arm64 with `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` — [committed run](reports/latency_metrics.json). Latency is dominated by query embedding and HNSW ANN search. Reproduce with:
+`uv run python scripts/benchmark_latency.py --n 200 --json-out reports/latency_metrics.json`
 
 ### Retrieval Quality
 

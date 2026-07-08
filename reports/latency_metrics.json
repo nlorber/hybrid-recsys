@@ -1,0 +1,17 @@
+{
+  "config": {
+    "n_queries": 200,
+    "lang": "en",
+    "size": 3,
+    "embedding_model": "paraphrase-multilingual-MiniLM-L12-v2",
+    "llm": "mock (no re-ranking)",
+    "platform": "macOS-26.4.1-arm64-arm-64bit"
+  },
+  "latency_ms": {
+    "mean": 10.2,
+    "p50": 9.7,
+    "p95": 14.4,
+    "min": 8.3,
+    "max": 27.4
+  }
+}
