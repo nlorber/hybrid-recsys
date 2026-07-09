@@ -19,7 +19,7 @@ dependencies = [
     "sentence-transformers>=4.0,<5",
     "spacy>=3.8,<4",
     "nltk>=3.9,<4",
-    "typer>=0.15,<1",
+    "typer>=0.26.8,<1",
     "voyager>=2.1,<3",
 ]
 
