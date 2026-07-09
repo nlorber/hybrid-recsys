@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "hybrid-recsys"
-version = "2.1.1"
+version = "2.2.0"
 description = "Multilingual hybrid recommendation engine: dual retrieval, RRF, LLM re-ranking"
 readme = "README.md"
 license = { file = "LICENSE" }
