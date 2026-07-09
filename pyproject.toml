@@ -18,7 +18,7 @@ dependencies = [
     "scikit-learn>=1.6,<2",
     "sentence-transformers>=4.0,<5",
     "spacy>=3.8,<4",
-    "nltk>=3.9,<4",
+    "nltk>=3.10.0,<4",
     "typer>=0.15,<1",
     "voyager>=2.1,<3",
 ]
