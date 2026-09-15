@@ -52,7 +52,10 @@ def query_ann_index(
         k: Number of neighbors to return.
 
     Returns:
-        List of indices of nearest neighbors, closest first.
+        List of indices of nearest neighbors, closest first. Empty for an all-zero
+        vector on a cosine index, which has no direction to compare against.
     """
+    if index.space == Space.Cosine and not any(query_vector):
+        return []
     neighbors, _ = index.query(query_vector, k=k)
     return [int(i) for i in neighbors]

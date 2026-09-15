@@ -1,6 +1,8 @@
 """Domain models for the recommendation engine."""
 
-from pydantic import BaseModel, Field
+from typing import Annotated
+
+from pydantic import BaseModel, Field, StringConstraints
 
 
 class MediaItem(BaseModel):
@@ -25,7 +27,7 @@ class CatalogItem(BaseModel):
 class RecoRequest(BaseModel):
     """Recommendation request."""
 
-    query: str = Field(max_length=300)
+    query: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=300)]
     lang: str = Field(pattern=r"^(fr|en|de)$")
     size: int = Field(default=3, ge=1, le=10)
     duration: int | None = Field(default=None, gt=0)

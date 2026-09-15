@@ -184,6 +184,11 @@ class TestRecommendEndpoint:
         )
         assert response.status_code == 422
 
+    @pytest.mark.parametrize("query", ["", "   "])
+    def test_recommend_rejects_blank_query(self, client, query: str) -> None:
+        response = client.post("/recommend", json={"query": query, "lang": "en", "size": 1})
+        assert response.status_code == 422
+
 
 class TestRecommendExplainEndpoint:
     def test_explain_returns_enriched_programs(self, client) -> None:

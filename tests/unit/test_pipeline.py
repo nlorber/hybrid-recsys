@@ -214,6 +214,13 @@ class TestRecommendExplained:
             assert p.sources and set(p.sources) <= {"dense", "sparse"}
             assert isinstance(p.reranked, bool)
 
+    def test_query_without_known_terms_skips_sparse_retrieval(self, pipeline_env) -> None:
+        # No term is in the TF-IDF vocabulary, so the sparse vector is all zeros.
+        request = RecoRequest(query="zzqx qwvb", lang="en", size=3)
+        programs = pipeline_env.recommend_explained(request)
+        assert programs
+        assert all(p.sources == ["dense"] for p in programs)
+
     def test_flags_reranked_when_llm_changes_order(self, pipeline_env) -> None:
         # Reversing the RRF candidate order must move at least one program.
         pipeline_env._llm = ReversingLLMProvider()
