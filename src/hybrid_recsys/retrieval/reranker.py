@@ -127,10 +127,11 @@ def rerank_programs(
         {"program_id": pid, "description": descriptions.get(pid, "")} for pid in rrf_ranking
     ]
 
+    # Not a context manager: its exit joins the worker, so a hung provider call would hold
+    # the request past the timeout. The abandoned worker finishes in the background.
+    executor = ThreadPoolExecutor(max_workers=1)
     try:
-        with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(llm.rerank, query, candidates, size, lang)
-            result = future.result(timeout=timeout)
+        result = executor.submit(llm.rerank, query, candidates, size, lang).result(timeout=timeout)
     except FuturesTimeoutError:
         logger.warning("LLM reranking timed out after %.1fs, falling back to RRF", timeout)
         return rrf_ranking[:size]
@@ -140,6 +141,8 @@ def rerank_programs(
         # rather than fail the request.
         logger.exception("LLM reranking failed, falling back to RRF")
         return rrf_ranking[:size]
+    finally:
+        executor.shutdown(wait=False)
 
     # Drop IDs the LLM may have hallucinated outside the candidate set
     candidate_set = set(rrf_ranking)

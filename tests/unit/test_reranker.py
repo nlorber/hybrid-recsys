@@ -1,5 +1,6 @@
 """Tests for prompt building, LLM response parsing, and rerank_programs behavior."""
 
+import threading
 import time
 
 from hybrid_recsys.providers.llm.base import LLMProvider
@@ -121,11 +122,11 @@ class APIErrorLLMProvider(LLMProvider):
         raise _SimulatedAPIError("Connection error.")
 
 
-class SlowLLMProvider(LLMProvider):
-    """LLM provider that sleeps, for testing timeout fallback."""
+class BlockingLLMProvider(LLMProvider):
+    """LLM provider that hangs until released, for testing timeout fallback."""
 
-    def __init__(self, delay: float = 10.0) -> None:
-        self._delay = delay
+    def __init__(self) -> None:
+        self.release = threading.Event()
 
     def rerank(
         self,
@@ -134,7 +135,8 @@ class SlowLLMProvider(LLMProvider):
         size: int,
         lang: str,
     ) -> list[str]:
-        time.sleep(self._delay)
+        # Bounded wait so a regression fails the latency assertion instead of hanging.
+        self.release.wait(timeout=5.0)
         return [c["program_id"] for c in candidates[:size]]
 
 
@@ -281,14 +283,21 @@ class TestRerankPrograms:
         assert all(pid in RRF_RANKING for pid in result)
 
     def test_fallback_to_rrf_on_timeout(self) -> None:
-        """Slow LLM that exceeds timeout falls back to RRF order."""
-        result = rerank_programs(
-            llm=SlowLLMProvider(delay=10.0),
-            query="tech",
-            rrf_ranking=RRF_RANKING,
-            descriptions=DESCRIPTIONS,
-            size=3,
-            lang="en",
-            timeout=0.05,
-        )
+        """A hung LLM falls back to RRF order without holding the call past the timeout."""
+        llm = BlockingLLMProvider()
+        start = time.monotonic()
+        try:
+            result = rerank_programs(
+                llm=llm,
+                query="tech",
+                rrf_ranking=RRF_RANKING,
+                descriptions=DESCRIPTIONS,
+                size=3,
+                lang="en",
+                timeout=0.05,
+            )
+            elapsed = time.monotonic() - start
+        finally:
+            llm.release.set()
         assert result == ["p1", "p2", "p3"]
+        assert elapsed < 1.0
