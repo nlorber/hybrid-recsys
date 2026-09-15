@@ -159,9 +159,9 @@ class RecommendationPipeline:
         )
 
         emb_set, tfidf_set = set(emb_programs), set(tfidf_programs)
-        final_set = set(final)
-        # Position each final program held in pure RRF order, to detect re-rank moves.
-        rrf_positions = {pid: i for i, pid in enumerate(p for p in rrf_order if p in final_set)}
+        # Position each program held in pure RRF order, to detect re-rank moves. A program
+        # promoted from below the cut-off counts as moved even when relative order is kept.
+        rrf_positions = {pid: i for i, pid in enumerate(rrf_order)}
 
         results: list[ExplainedProgram] = []
         for idx, pid in enumerate(final):

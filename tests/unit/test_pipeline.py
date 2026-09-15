@@ -45,6 +45,16 @@ class ReversingLLMProvider(LLMProvider):
         return [c["program_id"] for c in candidates][::-1][:size]
 
 
+class SkippingLLMProvider(LLMProvider):
+    """Swaps the third RRF candidate for the fourth, keeping the relative order."""
+
+    def rerank(
+        self, query: str, candidates: list[dict[str, str]], size: int, lang: str
+    ) -> list[str]:
+        ids = [c["program_id"] for c in candidates]
+        return (ids[:2] + ids[3:])[:size]
+
+
 @pytest.fixture
 def pipeline_env(tmp_path: Path):
     """Set up a pipeline with fake data and mock providers."""
@@ -227,3 +237,10 @@ class TestRecommendExplained:
         request = RecoRequest(query="technology", lang="en", size=3)
         programs = pipeline_env.recommend_explained(request)
         assert any(p.reranked for p in programs)
+
+    def test_flags_program_promoted_from_below_cutoff(self, pipeline_env) -> None:
+        # The LLM keeps relative order but swaps in the fourth RRF candidate at rank 3.
+        pipeline_env._llm = SkippingLLMProvider()
+        request = RecoRequest(query="technology", lang="en", size=3)
+        programs = pipeline_env.recommend_explained(request)
+        assert [p.reranked for p in programs] == [False, False, True]
