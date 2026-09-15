@@ -55,40 +55,36 @@ class TestBuildRerankPrompt:
 
 
 class TestParseRerankResponse:
-    def test_valid_python_list(self) -> None:
-        result = parse_rerank_response("['p1', 'p2', 'p3']")
+    def test_valid_response(self) -> None:
+        result = parse_rerank_response('{"program_ids": ["p1", "p2", "p3"]}')
         assert result == ["p1", "p2", "p3"]
 
-    def test_valid_json_style_list(self) -> None:
-        result = parse_rerank_response('["p1", "p2"]')
-        assert result == ["p1", "p2"]
-
-    def test_empty_list(self) -> None:
-        result = parse_rerank_response("[]")
+    def test_empty_program_ids(self) -> None:
+        result = parse_rerank_response('{"program_ids": []}')
         assert result == []
 
     def test_empty_string_returns_empty(self) -> None:
         result = parse_rerank_response("")
         assert result == []
 
-    def test_not_a_list_returns_empty(self) -> None:
+    def test_not_json_returns_empty(self) -> None:
         result = parse_rerank_response("not a list at all")
         assert result == []
 
-    def test_extra_text_before_list_returns_empty(self) -> None:
-        result = parse_rerank_response("Here are my picks: ['p1', 'p2']")
+    def test_bare_list_returns_empty(self) -> None:
+        result = parse_rerank_response('["p1", "p2"]')
+        assert result == []
+
+    def test_missing_key_returns_empty(self) -> None:
+        result = parse_rerank_response('{"ids": ["p1"]}')
         assert result == []
 
     def test_non_string_elements_returns_empty(self) -> None:
-        result = parse_rerank_response("[1, 2, 3]")
+        result = parse_rerank_response('{"program_ids": [1, 2, 3]}')
         assert result == []
 
     def test_mixed_types_returns_empty(self) -> None:
-        result = parse_rerank_response("['p1', 2, 'p3']")
-        assert result == []
-
-    def test_dict_returns_empty(self) -> None:
-        result = parse_rerank_response("{'key': 'value'}")
+        result = parse_rerank_response('{"program_ids": ["p1", 2, "p3"]}')
         assert result == []
 
 

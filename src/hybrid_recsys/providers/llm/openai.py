@@ -5,15 +5,20 @@ import logging
 from openai import OpenAI
 
 from hybrid_recsys.providers.llm.base import LLMProvider
-from hybrid_recsys.retrieval.reranker import build_rerank_prompt, parse_rerank_response
+from hybrid_recsys.retrieval.reranker import (
+    RERANK_RESPONSE_SCHEMA,
+    build_rerank_prompt,
+    parse_rerank_response,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class OpenAILLMProvider(LLMProvider):
-    """LLM re-ranker using OpenAI ChatCompletion.
+    """LLM re-ranker using OpenAI ChatCompletion with strict structured output.
 
-    Compatible with both OpenAI and Azure OpenAI via base_url.
+    Compatible with both OpenAI and Azure OpenAI via base_url. The model and endpoint
+    must support ``response_format`` of type ``json_schema``.
 
     Args:
         api_key: OpenAI API key.
@@ -44,9 +49,17 @@ class OpenAILLMProvider(LLMProvider):
             model=self._model,
             messages=[{"role": "user", "content": prompt}],
             temperature=0.0,
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
+                    "name": "rerank_response",
+                    "strict": True,
+                    "schema": RERANK_RESPONSE_SCHEMA,
+                },
+            },
         )
 
-        content = response.choices[0].message.content or "[]"
+        content = response.choices[0].message.content or ""
         result = parse_rerank_response(content)
 
         if not result:

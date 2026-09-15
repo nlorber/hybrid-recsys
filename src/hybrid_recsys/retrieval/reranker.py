@@ -1,6 +1,6 @@
 """LLM-based re-ranking with prompt generation and graceful fallback."""
 
-import ast
+import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
 from concurrent.futures import TimeoutError as FuturesTimeoutError
@@ -9,16 +9,22 @@ from hybrid_recsys.providers.llm.base import LLMProvider
 
 logger = logging.getLogger(__name__)
 
+# Output schema the LLM providers enforce via structured output, read by parse_rerank_response.
+RERANK_RESPONSE_SCHEMA: dict[str, object] = {
+    "type": "object",
+    "properties": {"program_ids": {"type": "array", "items": {"type": "string"}}},
+    "required": ["program_ids"],
+    "additionalProperties": False,
+}
+
 PROMPT_TEMPLATES: dict[str, str] = {
     "fr": (
         "Voici une liste de programmes disponibles en podcast, "
         "ainsi que leurs descriptions.\n"
         "Sélectionne exactement {size} programme(s) dans cette liste "
         "pouvant correspondre à la requête suivante d'un utilisateur: {query}\n\n"
-        "Ta réponse devra absolument et exclusivement prendre la forme "
-        "d'une liste de strings comportant les `program_id` des programmes "
-        "sélectionnés, classés par pertinence décroissante.\n"
-        "Par exemple : ['program_id1', 'program_id2', 'program_id3'].\n\n"
+        "Renvoie les `program_id` des programmes sélectionnés dans le champ "
+        "`program_ids`, classés par pertinence décroissante.\n\n"
         "Voici les données contextuelles disponibles :\n{context}"
     ),
     "en": (
@@ -26,10 +32,8 @@ PROMPT_TEMPLATES: dict[str, str] = {
         "along with their descriptions.\n"
         "Select exactly {size} program(s) from this list that may match "
         "the following user request: {query}\n\n"
-        "Your response must strictly and exclusively take the form of "
-        "a list of strings containing the `program_id` of the selected programs, "
-        "sorted by decreasing relevance.\n"
-        "For example: ['program_id1', 'program_id2', 'program_id3'].\n\n"
+        "Return the `program_id` of the selected programs in the `program_ids` field, "
+        "sorted by decreasing relevance.\n\n"
         "Here are the available contextual data:\n{context}"
     ),
     "de": (
@@ -37,11 +41,8 @@ PROMPT_TEMPLATES: dict[str, str] = {
         "zusammen mit ihren Beschreibungen.\n"
         "Wählen Sie genau {size} Programm(e) aus dieser Liste, "
         "die zur folgenden Benutzeranfrage passen könnten: {query}\n\n"
-        "Ihre Antwort muss strikt und ausschließlich in Form "
-        "einer Liste von Zeichenfolgen erfolgen, die die `program_id` "
-        "der ausgewählten Programme enthalten, "
-        "sortiert nach abnehmender Relevanz.\n"
-        "Zum Beispiel: ['program_id1', 'program_id2', 'program_id3'].\n\n"
+        "Geben Sie die `program_id` der ausgewählten Programme im Feld "
+        "`program_ids` zurück, sortiert nach abnehmender Relevanz.\n\n"
         "Hier sind die verfügbaren Kontextdaten:\n{context}"
     ),
 }
@@ -76,20 +77,21 @@ def build_rerank_prompt(
 
 
 def parse_rerank_response(response: str) -> list[str]:
-    """Parse an LLM response as a Python list of program IDs.
+    """Parse an LLM response matching ``RERANK_RESPONSE_SCHEMA``.
 
     Args:
-        response: Raw LLM response text.
+        response: Raw LLM response text, a JSON object with a ``program_ids`` array.
 
     Returns:
-        List of program_id strings, or empty list on parse failure.
+        List of program_id strings, or empty list if the response does not match the schema.
     """
     try:
-        result = ast.literal_eval(response)
-        if isinstance(result, list) and all(isinstance(x, str) for x in result):
-            return result
-    except (SyntaxError, ValueError):
-        logger.warning("Failed to parse LLM rerank response: %s", response[:200])
+        program_ids = json.loads(response).get("program_ids")
+    except (ValueError, AttributeError):
+        program_ids = None
+    if isinstance(program_ids, list) and all(isinstance(x, str) for x in program_ids):
+        return program_ids
+    logger.warning("Failed to parse LLM rerank response: %s", response[:200])
     return []
 
 

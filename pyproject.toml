@@ -36,7 +36,7 @@ openai = [
     "openai>=1.60,<2",
 ]
 anthropic = [
-    "anthropic>=0.40,<1",
+    "anthropic>=0.80,<1",
 ]
 
 [project.scripts]

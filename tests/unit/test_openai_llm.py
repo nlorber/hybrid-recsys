@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from hybrid_recsys.providers.llm.openai import OpenAILLMProvider
+from hybrid_recsys.retrieval.reranker import RERANK_RESPONSE_SCHEMA
 
 
 @pytest.fixture()
@@ -29,14 +30,18 @@ SAMPLE_CANDIDATES = [
 ]
 
 
+def _completion(content: str | None) -> SimpleNamespace:
+    return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=content))])
+
+
 class TestRerank:
     def test_constructs_prompt_with_query_and_candidates(
         self, provider: OpenAILLMProvider, mock_openai: MagicMock
     ) -> None:
         """Verify the provider builds a prompt containing the query,
         candidate descriptions, and program IDs."""
-        mock_openai.chat.completions.create.return_value = SimpleNamespace(
-            choices=[SimpleNamespace(message=SimpleNamespace(content="['prog_1']"))]
+        mock_openai.chat.completions.create.return_value = _completion(
+            '{"program_ids": ["prog_1"]}'
         )
 
         provider.rerank("machine learning", SAMPLE_CANDIDATES, size=1, lang="en")
@@ -52,8 +57,8 @@ class TestRerank:
         self, provider: OpenAILLMProvider, mock_openai: MagicMock
     ) -> None:
         """French lang should produce a French prompt."""
-        mock_openai.chat.completions.create.return_value = SimpleNamespace(
-            choices=[SimpleNamespace(message=SimpleNamespace(content="['prog_1']"))]
+        mock_openai.chat.completions.create.return_value = _completion(
+            '{"program_ids": ["prog_1"]}'
         )
 
         provider.rerank("query", SAMPLE_CANDIDATES, size=1, lang="fr")
@@ -65,22 +70,34 @@ class TestRerank:
     def test_sends_temperature_zero(
         self, provider: OpenAILLMProvider, mock_openai: MagicMock
     ) -> None:
-        mock_openai.chat.completions.create.return_value = SimpleNamespace(
-            choices=[SimpleNamespace(message=SimpleNamespace(content="['prog_1']"))]
+        mock_openai.chat.completions.create.return_value = _completion(
+            '{"program_ids": ["prog_1"]}'
         )
 
         provider.rerank("q", SAMPLE_CANDIDATES, size=1, lang="en")
 
         assert mock_openai.chat.completions.create.call_args[1]["temperature"] == 0.0
 
+    def test_requests_strict_json_schema_output(
+        self, provider: OpenAILLMProvider, mock_openai: MagicMock
+    ) -> None:
+        mock_openai.chat.completions.create.return_value = _completion(
+            '{"program_ids": ["prog_2", "prog_1"]}'
+        )
+
+        result = provider.rerank("q", SAMPLE_CANDIDATES, size=2, lang="en")
+
+        response_format = mock_openai.chat.completions.create.call_args[1]["response_format"]
+        assert response_format["type"] == "json_schema"
+        assert response_format["json_schema"]["strict"] is True
+        assert response_format["json_schema"]["schema"] == RERANK_RESPONSE_SCHEMA
+        assert result == ["prog_2", "prog_1"]
+
     def test_none_content_falls_back_to_empty_list(
         self, provider: OpenAILLMProvider, mock_openai: MagicMock
     ) -> None:
-        """When the API returns content=None, the provider should
-        return [] via the `content or '[]'` fallback."""
-        mock_openai.chat.completions.create.return_value = SimpleNamespace(
-            choices=[SimpleNamespace(message=SimpleNamespace(content=None))]
-        )
+        """When the API returns content=None (e.g. a refusal), the provider returns []."""
+        mock_openai.chat.completions.create.return_value = _completion(None)
 
         result = provider.rerank("q", SAMPLE_CANDIDATES, size=1, lang="en")
 

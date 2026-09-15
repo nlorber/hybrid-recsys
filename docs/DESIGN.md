@@ -63,9 +63,11 @@ An LLM can reason about query intent beyond surface-level similarity, but:
 - Network latency and API errors are real in production.
 - LLMs can hallucinate or return malformed rankings.
 
-The re-ranker therefore validates the LLM output and falls back to the RRF ranking
-when the response is unusable. This keeps the pipeline reliable without abandoning
-the quality uplift LLM re-ranking can provide.
+The providers therefore request structured output against a JSON schema
+(`{"program_ids": [...]}`), so the API enforces the response shape. The re-ranker still
+validates the IDs (dropping any outside the candidate set, padding from RRF when the LLM
+under-selects) and falls back to the RRF ranking when the response is unusable. This keeps
+the pipeline reliable without abandoning the quality uplift LLM re-ranking can provide.
 
 ---
 

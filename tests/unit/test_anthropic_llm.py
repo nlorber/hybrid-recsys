@@ -13,6 +13,8 @@ from typing import Any
 
 import pytest
 
+from hybrid_recsys.retrieval.reranker import RERANK_RESPONSE_SCHEMA
+
 SAMPLE_CANDIDATES = [
     {"program_id": "prog_1", "description": "A show about AI"},
     {"program_id": "prog_2", "description": "A show about cooking"},
@@ -23,7 +25,7 @@ SAMPLE_CANDIDATES = [
 class _FakeMessages:
     def __init__(self) -> None:
         self.last_kwargs: dict[str, Any] = {}
-        self.reply = "['prog_1']"
+        self.reply = '{"program_ids": ["prog_1"]}'
 
     def create(self, **kwargs: Any) -> Any:
         self.last_kwargs = kwargs
@@ -64,9 +66,17 @@ class TestRerank:
 
     def test_parses_program_ids_from_text_block(self, fake_sdk: Any) -> None:
         provider = _make_provider()
-        provider._client.messages.reply = "['prog_2', 'prog_1']"
+        provider._client.messages.reply = '{"program_ids": ["prog_2", "prog_1"]}'
         result = provider.rerank("q", SAMPLE_CANDIDATES, size=2, lang="en")
         assert result == ["prog_2", "prog_1"]
+
+    def test_requests_json_schema_output(self, fake_sdk: Any) -> None:
+        provider = _make_provider()
+        provider.rerank("q", SAMPLE_CANDIDATES, size=1, lang="en")
+        output_config = provider._client.messages.last_kwargs["output_config"]
+        assert output_config == {
+            "format": {"type": "json_schema", "schema": RERANK_RESPONSE_SCHEMA}
+        }
 
     def test_sends_temperature_zero(self, fake_sdk: Any) -> None:
         provider = _make_provider()

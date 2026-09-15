@@ -1,20 +1,27 @@
 """Anthropic (Claude) LLM provider for re-ranking.
 
-Mirrors the OpenAI provider: builds the same rerank prompt, calls the Messages API,
-and parses the returned program-id list. The ``anthropic`` SDK is an optional
-dependency, imported lazily so the package installs without it.
+Mirrors the OpenAI provider: builds the same rerank prompt, calls the Messages API with
+the shared JSON-schema output constraint, and parses the returned program-id list. The
+``anthropic`` SDK is an optional dependency, imported lazily so the package installs
+without it.
 """
 
 import logging
 
 from hybrid_recsys.providers.llm.base import LLMProvider
-from hybrid_recsys.retrieval.reranker import build_rerank_prompt, parse_rerank_response
+from hybrid_recsys.retrieval.reranker import (
+    RERANK_RESPONSE_SCHEMA,
+    build_rerank_prompt,
+    parse_rerank_response,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class AnthropicLLMProvider(LLMProvider):
-    """LLM re-ranker using the Anthropic Messages API (Claude).
+    """LLM re-ranker using the Anthropic Messages API (Claude) with structured output.
+
+    The model must support structured outputs (``output_config.format``).
 
     Args:
         api_key: Anthropic API key (falls back to the ANTHROPIC_API_KEY env var).
@@ -51,8 +58,9 @@ class AnthropicLLMProvider(LLMProvider):
             max_tokens=self._max_tokens,
             temperature=0.0,
             messages=[{"role": "user", "content": prompt}],
+            output_config={"format": {"type": "json_schema", "schema": RERANK_RESPONSE_SCHEMA}},
         )
-        content = "".join(str(getattr(block, "text", "")) for block in response.content) or "[]"
+        content = "".join(str(getattr(block, "text", "")) for block in response.content)
         result = parse_rerank_response(content)
         if not result:
             logger.warning("Claude returned an unparseable rerank response")
