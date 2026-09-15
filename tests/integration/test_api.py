@@ -173,13 +173,14 @@ class TestRecommendEndpoint:
         )
         assert response.status_code == 422
 
-    def test_recommend_validates_size_bounds(self, client) -> None:
+    @pytest.mark.parametrize("size", [0, 11])
+    def test_recommend_validates_size_bounds(self, client, size: int) -> None:
         response = client.post(
             "/recommend",
             json={
                 "query": "test",
                 "lang": "en",
-                "size": 0,
+                "size": size,
             },
         )
         assert response.status_code == 422
@@ -230,16 +231,6 @@ class TestDemoEndpoint:
         assert response.status_code == 200
         assert "text/html" in response.headers["content-type"]
         assert "hybrid" in response.text.lower()
-
-        response = client.post(
-            "/recommend",
-            json={
-                "query": "test",
-                "lang": "en",
-                "size": 11,
-            },
-        )
-        assert response.status_code == 422
 
     def test_recommend_validates_query_length(self, client) -> None:
         response = client.post(
