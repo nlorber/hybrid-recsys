@@ -18,9 +18,6 @@ from hybrid_recsys.retrieval.fusion import (
 from hybrid_recsys.retrieval.reranker import rerank_programs
 from hybrid_recsys.retrieval.scorer import duration_score
 
-# How many media candidates to consider per requested result
-MEDIA_CANDIDATE_MULTIPLIER = 3
-
 logger = logging.getLogger(__name__)
 
 
@@ -105,6 +102,7 @@ class RecommendationPipeline:
         requested_duration = request.duration or self._settings.default_duration
         medias = self._rank_media(
             index=index,
+            programs=programs,
             emb_programs=emb_programs,
             tfidf_programs=tfidf_programs,
             requested_duration=requested_duration,
@@ -189,6 +187,7 @@ class RecommendationPipeline:
     def _rank_media(
         self,
         index: LanguageIndex,
+        programs: list[str],
         emb_programs: list[str],
         tfidf_programs: list[str],
         requested_duration: int,
@@ -196,40 +195,31 @@ class RecommendationPipeline:
     ) -> list[str]:
         """Rank media items using embedding, TF-IDF, and duration signals.
 
-        For each program, selects the earliest episode. Builds three ranked lists
-        and fuses them via RRF.
+        Each returned program contributes its earliest episode, so every media item
+        belongs to a program in ``programs``. Those episodes form three ranked lists
+        (retriever rank of their program, and duration proximity) fused via RRF.
         """
-        # Get earliest episode per program
+        # Get earliest episode per returned program
         earliest: dict[str, dict[str, Any]] = {}
-        all_program_ids = set(emb_programs) | set(tfidf_programs)
-        for pid in all_program_ids:
+        for pid in programs:
             media_list = index.media_data.get(pid, [])
             if not media_list:
                 continue
             first_ep = min(media_list, key=lambda m: m["episode"])
             earliest[pid] = first_ep
 
-        # Media from embedding-ranked programs (ordered by program rank)
-        emb_media = [earliest[pid]["media_id"] for pid in emb_programs if pid in earliest][
-            : size * MEDIA_CANDIDATE_MULTIPLIER
-        ]
-
-        # Media from TF-IDF-ranked programs (ordered by program rank)
-        tfidf_media = [earliest[pid]["media_id"] for pid in tfidf_programs if pid in earliest][
-            : size * MEDIA_CANDIDATE_MULTIPLIER
-        ]
+        # Media ordered by their program's rank in each retriever's list
+        emb_media = [earliest[pid]["media_id"] for pid in emb_programs if pid in earliest]
+        tfidf_media = [earliest[pid]["media_id"] for pid in tfidf_programs if pid in earliest]
 
         # Media scored by duration proximity
         duration_scored = []
-        for pid in all_program_ids:
-            if pid not in earliest:
-                continue
-            ep = earliest[pid]
+        for ep in earliest.values():
             delta = requested_duration - ep["duration"]
             score = duration_score(delta, penalty=self._settings.duration_penalty)
             duration_scored.append((ep["media_id"], score))
         duration_scored.sort(key=lambda x: x[1], reverse=True)
-        duration_media = [mid for mid, _ in duration_scored][: size * MEDIA_CANDIDATE_MULTIPLIER]
+        duration_media = [mid for mid, _ in duration_scored]
 
         # RRF fuse media lists
         return reciprocal_rank_fusion(

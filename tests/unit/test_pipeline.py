@@ -161,6 +161,16 @@ class TestRecommendationPipeline:
         assert "m1" in response.medias, "earliest episode m1 must appear"
         assert "m2" not in response.medias, "later episode m2 must not appear"
 
+    def test_media_belong_to_returned_programs(self, pipeline_env) -> None:
+        media_program = {"m1": "p1", "m2": "p1", "m3": "p2", "m4": "p3", "m5": "p4", "m6": "p5"}
+        for query in ["technology", "history", "space", "neural networks"]:
+            for size in [1, 2, 3]:
+                request = RecoRequest(query=query, lang="en", size=size)
+                response = pipeline_env.recommend(request)
+                assert response.medias
+                for mid in response.medias:
+                    assert media_program[mid] in response.programs, (query, size, mid)
+
     def test_mock_llm_reranks_by_keyword_overlap(self) -> None:
         """Mock LLM should favor programs whose descriptions match."""
         mock = MockLLMProvider()

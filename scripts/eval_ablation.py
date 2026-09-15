@@ -104,6 +104,7 @@ class AblationPipeline(RecommendationPipeline):
         requested_duration = request.duration or self._settings.default_duration
         medias = self._rank_media(
             index=index,
+            programs=programs,
             emb_programs=emb_programs,
             tfidf_programs=tfidf_programs,
             requested_duration=requested_duration,
