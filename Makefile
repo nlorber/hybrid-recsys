@@ -17,9 +17,10 @@ index:
 test:
 	uv run pytest
 
-## Run ruff linter
+## Run ruff linter and formatting check
 lint:
-	uv run ruff check src/ tests/
+	uv run ruff check src/ tests/ scripts/
+	uv run ruff format --check src/ tests/ scripts/
 
 ## Run mypy strict type checking
 typecheck:
@@ -27,7 +28,7 @@ typecheck:
 
 ## Apply ruff formatter
 format:
-	uv run ruff format src/ tests/
+	uv run ruff format src/ tests/ scripts/
 
 ## Start the API server
 serve:
