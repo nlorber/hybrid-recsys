@@ -32,9 +32,13 @@ jobs:
 
       - name: Download spaCy models
         run: |
-          uv run python -m spacy download fr_core_news_sm
-          uv run python -m spacy download en_core_web_sm
-          uv run python -m spacy download de_core_news_sm
+          for model in fr_core_news_sm en_core_web_sm de_core_news_sm; do
+            for attempt in 1 2 3; do
+              uv run python -m spacy download "$model" && break
+              [ "$attempt" -eq 3 ] && exit 1
+              sleep 5
+            done
+          done
 
       - name: Download NLTK data
         run: uv run python -c "import nltk; nltk.download('stopwords')"
