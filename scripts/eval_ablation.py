@@ -5,9 +5,9 @@ Evaluates the same 20-query benchmark used in evaluate.py under three modes:
   - sparse:  only the TF-IDF ANN ranking is fed to RRF (embedding list is empty)
   - hybrid:  both lists fused via RRF (default pipeline behaviour)
 
-Uses the mock LLM provider so no API keys are required; LLM re-ranking is
-bypassed (all three modes are equivalent at the re-ranking step: fewer candidates
-than `size` → no LLM call).
+Uses the mock LLM provider so no API keys are required. RRF returns more candidates than
+`size`, so the mock re-ranker (keyword overlap with the query) runs in all three modes:
+the ablation isolates the retrieval signals, with re-ranking held constant.
 
 Usage:
     uv run python scripts/eval_ablation.py
@@ -206,7 +206,7 @@ def run_ablation(
     # Print markdown table
     print("\n## Ablation Results\n")
     print(
-        "Averaged over all evaluated queries (mock LLM; no re-ranking). "
+        "Averaged over all evaluated queries (mock LLM re-ranker: keyword overlap). "
         "Relevance: program topic matches query topic.\n"
     )
     print(f"{'Mode':<8} {'@k':<4} {'Precision':>10} {'Recall':>8} {'nDCG':>8}  {'Queries':>8}")

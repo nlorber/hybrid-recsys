@@ -80,7 +80,7 @@ def run_benchmark(n: int, lang: str, size: int, json_out: Path | None = None) ->
                 "lang": lang,
                 "size": size,
                 "embedding_model": settings.embedding_model,
-                "llm": "mock (no re-ranking)",
+                "llm": "mock (keyword-overlap re-ranker)",
                 "platform": platform.platform(),
             },
             "latency_ms": {

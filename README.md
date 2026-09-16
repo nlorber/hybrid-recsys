@@ -62,14 +62,15 @@ Measured on the 200-program synthetic catalog (1075 media items across `en`, `fr
 | p95    | 14.4 ms |
 | Max    | 27.4 ms |
 
-Benchmarked over 200 queries, single-threaded, no LLM re-ranking, on macOS arm64 with `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` — [committed run](reports/latency_metrics.json). Latency is dominated by query embedding and HNSW ANN search. Reproduce with:
+Benchmarked over 200 queries, single-threaded, with the mock re-ranker (keyword overlap, no network call), on macOS arm64 with `sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2` — [committed run](reports/latency_metrics.json). Latency is dominated by query embedding and HNSW ANN search. Reproduce with:
 `uv run python scripts/benchmark_latency.py --n 200 --json-out reports/latency_metrics.json`
 
 ### Retrieval Quality
 
 Evaluated on 20 topic-based queries across `en`, `fr`, `de` (5 trilingual topics +
 5 English-only topics), with relevance judged by whether a returned program's
-topic matches the query topic.
+topic matches the query topic. The mock re-ranker (keyword overlap with the query)
+runs on top of retrieval here, as in the ablation below.
 
 | Metric    | @3    | @5    |
 |-----------|-------|-------|
@@ -84,8 +85,8 @@ correspondingly.
 
 ### Retrieval Ablation: Dense vs Sparse vs Hybrid
 
-Same 20-query benchmark, mock LLM (no re-ranking). Measures the contribution of
-each retrieval signal in isolation.
+Same 20-query benchmark, with the mock re-ranker applied in every mode. Measures the
+contribution of each retrieval signal in isolation.
 
 | Mode    | @k | Precision | Recall | nDCG  |
 |---------|----|-----------:|-------:|------:|
