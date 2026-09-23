@@ -17,7 +17,8 @@ class SentenceTransformerProvider(EmbeddingProvider):
 
     def embed(self, text: str) -> list[float]:
         """Embed a single text string."""
-        return self._model.encode(text).tolist()
+        vector: list[float] = self._model.encode(text).tolist()
+        return vector
 
     def embed_batch(self, texts: list[str]) -> list[list[float]]:
         """Embed a batch of texts."""
